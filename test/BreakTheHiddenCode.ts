@@ -18,6 +18,19 @@ describe("BreakTheHiddenCode", function () {
         return { breakTheHiddenCode, nullAddress, account1, account2, account3 };
     }
 
+    async function deployBthcAndCreateAGameFixture() {
+        const [account1, account2, account3] = await hre.ethers.getSigners();
+
+        const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+
+        const nullAddress = "0x0000000000000000000000000000000000000000";
+
+        await breakTheHiddenCode["createGame()"]();
+
+        return { breakTheHiddenCode, nullAddress, account1, account2, account3 };
+    }
+
     async function deployBthcAndCreateAGameWithSpecificOpponentFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
@@ -78,38 +91,77 @@ describe("BreakTheHiddenCode", function () {
     });
 
     describe("Join game", function () {
-        it("Should emit the event that the designated opponent joined", async function() {
-            const { breakTheHiddenCode, account2 } = await loadFixture(deployBthcAndCreateAGameWithSpecificOpponentFixture);
+        describe("With a random opponent", function() {
+            it("Should emit the event that a player joined", async function() {
+                const { breakTheHiddenCode, account2 } = await loadFixture(deployBthcAndCreateAGameFixture);
 
-            await expect(breakTheHiddenCode.connect(account2).joinGameById(0))
-                .to.emit(breakTheHiddenCode, "UserJoined");
+                await breakTheHiddenCode["createGame()"]();
+                await breakTheHiddenCode["createGame()"]();
+                await breakTheHiddenCode["createGame()"]();
+
+                await expect(breakTheHiddenCode.connect(account2).joinGame())
+                    .to.emit(breakTheHiddenCode, "UserJoined")
+                    .withArgs(account2, anyValue);
+            });
+
+            it("Should fail because there are no existing games", async function() {
+                const { breakTheHiddenCode } = await loadFixture(deployBreakTheHiddenCodeFixture);
+    
+                await expect(breakTheHiddenCode.joinGame())
+                    .to.be.revertedWith(
+                        "Currently there are no existing games"
+                    );
+            });
+
+            it("Should fail because there are no more games to join", async function() {
+                const { breakTheHiddenCode, account2, account3 } = await loadFixture(deployBthcAndCreateAGameFixture);
+
+                await expect(breakTheHiddenCode.connect(account2).joinGame())
+                    .to.emit(breakTheHiddenCode, "UserJoined")
+                    .withArgs(account2, anyValue);
+
+                await expect(breakTheHiddenCode.connect(account3).joinGame())
+                    .to.be.revertedWith(
+                        "There are no games to join"
+                    );
+            });
         });
 
-        it("Should fail because there are no existing game", async function() {
-            const { breakTheHiddenCode, account2 } = await loadFixture(deployBreakTheHiddenCodeFixture);
-
-            await expect(breakTheHiddenCode.connect(account2).joinGameById(0))
-                .to.be.revertedWith(
-                    "Currently there are no existing games"
-                );
-        });
-
-        it("Should fail because the provided game doesn not exist", async function() {
-            const { breakTheHiddenCode, account2 } = await loadFixture(deployBthcAndCreateAGameWithSpecificOpponentFixture);
-
-            await expect(breakTheHiddenCode.connect(account2).joinGameById(1))
-                .to.be.revertedWith(
-                    "Game doesn't exists"
-                );
-        });
-
-        it("Should fail because the address is not authorized to join", async function() {
-            const { breakTheHiddenCode, account2, account3 } = await loadFixture(deployBthcAndCreateAGameWithSpecificOpponentFixture);
-
-            await expect(breakTheHiddenCode.connect(account3).joinGameById(0))
-                .to.be.revertedWith(
-                    "Not authorized to join the game"
-                );
+        describe("With a specified opponent", function() {
+            it("Should emit the event that the designated opponent joined", async function() {
+                const { breakTheHiddenCode, account2 } = await loadFixture(deployBthcAndCreateAGameWithSpecificOpponentFixture);
+    
+                await expect(breakTheHiddenCode.connect(account2).joinGameById(0))
+                    .to.emit(breakTheHiddenCode, "UserJoined")
+                    .withArgs(account2, 0);
+            });
+    
+            it("Should fail because there are no existing games", async function() {
+                const { breakTheHiddenCode, account2 } = await loadFixture(deployBreakTheHiddenCodeFixture);
+    
+                await expect(breakTheHiddenCode.connect(account2).joinGameById(0))
+                    .to.be.revertedWith(
+                        "Currently there are no existing games"
+                    );
+            });
+    
+            it("Should fail because the provided game doesn not exist", async function() {
+                const { breakTheHiddenCode, account2 } = await loadFixture(deployBthcAndCreateAGameWithSpecificOpponentFixture);
+    
+                await expect(breakTheHiddenCode.connect(account2).joinGameById(1))
+                    .to.be.revertedWith(
+                        "Game doesn't exists"
+                    );
+            });
+    
+            it("Should fail because the address is not authorized to join", async function() {
+                const { breakTheHiddenCode, account2, account3 } = await loadFixture(deployBthcAndCreateAGameWithSpecificOpponentFixture);
+    
+                await expect(breakTheHiddenCode.connect(account3).joinGameById(0))
+                    .to.be.revertedWith(
+                        "Not authorized to join the game"
+                    );
+            });
         });
     });
 });
