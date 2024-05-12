@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "hardhat/console.sol";
+import "./PokerBettingProtocol.sol";
 
 contract BreakTheHiddenCode {
     /*  Variables declaration */
@@ -14,14 +15,16 @@ contract BreakTheHiddenCode {
 
     uint256[] joinableGames;
 
+    PokerBettingProtocol pokerBetting;
 
-    /*  Event declaration */
+    /*  Events declaration */
     event GameCreated(uint gameId);
     event GameCreatedForAnOpponent(uint gameId, address opponent);
     event UserJoined(address opponent, uint gameId);
     
     constructor() {
         nextGameId = 0;
+        pokerBetting = new PokerBettingProtocol(address(this));
     }
 
     function createGame() public {
@@ -57,6 +60,8 @@ contract BreakTheHiddenCode {
         games[gameId][1] = msg.sender;
 
         emit UserJoined(msg.sender, gameId);
+
+        pokerBetting.newBetting(games[gameId][0], gameId);
     }
 
     function joinGameById(uint gameId) public {
@@ -68,6 +73,8 @@ contract BreakTheHiddenCode {
         games[gameId][2] = address(0);
 
         emit UserJoined(msg.sender, gameId);
+
+        pokerBetting.newBetting(games[gameId][0], gameId);
     }
 
     function getRandom() internal view returns (uint) {
