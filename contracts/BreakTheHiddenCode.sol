@@ -24,7 +24,7 @@ contract BreakTheHiddenCode {
     
     constructor() {
         nextGameId = 0;
-        pokerBetting = new PokerBettingProtocol(address(this));
+        pokerBetting = new PokerBettingProtocol(address(this), 30 seconds);
     }
 
     function createGame() public {
