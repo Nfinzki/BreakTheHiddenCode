@@ -121,6 +121,13 @@ contract PokerBettingProtocol {
         winner.transfer(weiWon);
     }
 
+    function isBetFinished(uint index) public view returns(bool) {
+        require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exists");
+        require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
+
+        return bets[index][0] == bets[index][1];
+    }
+
     function getBets(uint index) internal view returns(uint, uint) {
         uint senderBet;
         uint opponentBet;

@@ -441,16 +441,15 @@ describe("PokerBettingProtocol", function () {
 
                 await time.increaseTo(afkDeadline);
 
-                const initialBalance = await hre.ethers.provider.getBalance(await account2.getAddress());
-
-                await expect(pokerBettingProtocol.connect(account2).issueAfk(betIndex))
+                const response = pokerBettingProtocol.connect(account2).issueAfk(betIndex);
+                await expect(response)
                     .to.emit(pokerBettingProtocol, "Afk")
                     .withArgs(betIndex);
 
-                const finalBalance = await hre.ethers.provider.getBalance(await account2.getAddress());
-
-                const gasFee = 7759705930192
-                expect(finalBalance - initialBalance).to.equal(oneEth - BigInt(gasFee));
+                await expect(response).to.changeEtherBalances(
+                    [pokerBettingProtocol, account2],
+                    [-oneEth, oneEth]
+                  );
 
                 expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
                 expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
@@ -464,16 +463,16 @@ describe("PokerBettingProtocol", function () {
 
                 await time.increaseTo(afkDeadline);
 
-                const initialBalance = await hre.ethers.provider.getBalance(await account1.getAddress());
+                const response = pokerBettingProtocol.issueAfk(betIndex);
 
-                await expect(pokerBettingProtocol.issueAfk(betIndex))
+                await expect(response)
                     .to.emit(pokerBettingProtocol, "Afk")
                     .withArgs(betIndex);
 
-                const finalBalance = await hre.ethers.provider.getBalance(await account1.getAddress());
-
-                const gasFee = 3736788904101
-                expect(finalBalance - initialBalance).to.equal((oneEth + twoEth) - BigInt(gasFee));
+                await expect(response).to.changeEtherBalances(
+                    [pokerBettingProtocol, account1],
+                    [-(oneEth + twoEth), oneEth + twoEth]
+                    );
 
                 expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
                 expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
@@ -608,6 +607,38 @@ describe("PokerBettingProtocol", function () {
                 .to.be.revertedWith(
                     "Index doesn't exist"
                 )
+        });
+    });
+
+    describe("Can game start", function () {
+        it("Should return true when the betting is done", async function () {
+            const { pokerBettingProtocol, betIndex } = await loadFixture(deployAgreedBetFixture);
+            
+            expect(await pokerBettingProtocol.isBetFinished(betIndex)).to.equal(true);
+        });
+
+        it("Should return false when the betting is not done", async function () {
+            const { pokerBettingProtocol, betIndex } = await loadFixture(deployCoupleBetsFixture);
+
+            expect(await pokerBettingProtocol.isBetFinished(betIndex)).to.equal(false);
+        });
+
+        it("Should fail because the index doesn't exists", async function () {
+            const { pokerBettingProtocol } = await loadFixture(deployAgreedBetFixture);
+
+            await expect(pokerBettingProtocol.isBetFinished(5))
+            .to.be.revertedWith(
+                "Index doesn't exists"
+            );
+        });
+
+        it("Should fail because the bet didn't start yet", async function () {
+            const { pokerBettingProtocol, betIndex } = await loadFixture(deployBetCreatedFixture);
+
+            await expect(pokerBettingProtocol.isBetFinished(betIndex))
+            .to.be.revertedWith(
+                "Bet not started yet"
+            );
         });
     });
 });
