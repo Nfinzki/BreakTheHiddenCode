@@ -26,31 +26,41 @@ contract PokerBettingProtocol {
         afkTolerance = _afkTolerance;
     }
 
-    modifier validateCall(uint index) {
+    modifier validateCall(uint index, address playerAddress) {
+        require(breakTheHiddenCodeAddress == msg.sender, "This function can only be invoked by BreakTheHiddenCode contract");
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exists");
-        require(nextMove[index] == msg.sender, "Invalid sender address. Not your turn");
+        require(nextMove[index] == playerAddress, "Invalid sender address. Not your turn");
 
         _;
     }
 
-    function newBetting(address player1, uint index) public {
-        require(player1 != address(0), "Invalid address");
+    modifier validateBthcAddress() {
+        require(breakTheHiddenCodeAddress == msg.sender, "This function can only be invoked by BreakTheHiddenCode contract");
+
+        _;
+    }
+
+    function newBetting(address player1, address player2, uint index) public validateBthcAddress() {
+        require(player1 != address(0) && player2 != address(0), "Invalid address");
         require(players[index][0] == address(0) && players[index][1] == address(0), "Index already in use");
-        require(player1 != msg.sender, "Can't open a new bet with yourself");
+        require(player1 != player2, "Can't open a new bet with yourself");
 
         players[index][0] = player1;
-        players[index][1] = msg.sender;
+        players[index][1] = player2;
 
         nextMove[index] = player1;
 
         emit NewBet(index);
     }
 
-    function bet(uint256 index) payable public validateCall(index) {
+    //This function returns:
+    //'true' if the player chooses to Check (and thus the betting phase is terminated)
+    //'false' if the player chooses to Rise (the betting phase continue)
+    function bet(uint256 index, address playerAddress) payable public validateCall(index, playerAddress) returns(bool) {
         require(msg.value > 0, "Invalid bet amount");
 
-        (uint senderBet, uint opponentBet) = getBets(index);
-        (uint senderIndex, uint opponentIndex) = getPlayersIndex(index);
+        (uint senderBet, uint opponentBet) = getBets(index, playerAddress);
+        (uint senderIndex, uint opponentIndex) = getPlayersIndex(index, playerAddress);
 
         require(senderBet + msg.value >= opponentBet, "Sendend amount is not valid");
 
@@ -63,18 +73,21 @@ contract PokerBettingProtocol {
         if (betDifference == 0) {
             nextMove[index] = address(0);
             emit Check(index);
-        } else
-            emit Rise(index, betDifference);
+            return true;
+        }
+            
+        emit Rise(index, betDifference);
+        return false;
     }
 
-    function fold(uint index) public validateCall(index) {
-        (uint senderBet, uint opponentBet) = getBets(index);
+    function fold(uint index, address playerAddress) public validateCall(index, playerAddress) {
+        (uint senderBet, uint opponentBet) = getBets(index, playerAddress);
 
         bets[index][0] = 0;
         bets[index][1] = 0;
         nextMove[index] = address(0);
 
-        (address payable sender, address payable opponent) = getPlayersPaybleAddress(index);
+        (address payable sender, address payable opponent) = getPlayersPaybleAddress(index, playerAddress);
 
         sender.transfer(senderBet);
         opponent.transfer(opponentBet);
@@ -85,9 +98,9 @@ contract PokerBettingProtocol {
         emit Fold(index);
     }
 
-    function issueAfk(uint index) public {
+    function issueAfk(uint index, address playerAddress) public validateBthcAddress() {
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exists");
-        require(nextMove[index] != msg.sender, "Invalid sender address. You can't issue the AFK status if it's your turn");
+        require(nextMove[index] != playerAddress, "Invalid sender address. You can't issue the AFK status if it's your turn");
         require(bets[index][0] != 0 || bets[index][1] != 0, "Bet not started yet");
         require(block.timestamp > lastMove[index] + afkTolerance, "The opponent still has time to make a choice");
 
@@ -99,13 +112,12 @@ contract PokerBettingProtocol {
         bets[index][0] = 0;
         bets[index][1] = 0;
 
-        payable(msg.sender).transfer(weiWon);
+        payable(playerAddress).transfer(weiWon);
 
         emit Afk(index);
     }
 
-    function withdraw(uint index, address payable winner) public {
-        require(breakTheHiddenCodeAddress == msg.sender, "This function can only be invoked by BreakTheHiddenCode contract");
+    function withdraw(uint index, address payable winner) public validateBthcAddress() {
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
         require(players[index][0] == winner || players[index][1] == winner, "Winner address doesn't exist");
         require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
@@ -128,11 +140,11 @@ contract PokerBettingProtocol {
         return bets[index][0] == bets[index][1];
     }
 
-    function getBets(uint index) internal view returns(uint, uint) {
+    function getBets(uint index, address playerAddress) internal view returns(uint, uint) {
         uint senderBet;
         uint opponentBet;
 
-        if (players[index][0] == msg.sender) {
+        if (players[index][0] == playerAddress) {
             senderBet = bets[index][0];
             opponentBet = bets[index][1];
         }
@@ -144,11 +156,11 @@ contract PokerBettingProtocol {
         return (senderBet, opponentBet);
     }
 
-    function getPlayersIndex(uint index) internal view returns(uint, uint) {
+    function getPlayersIndex(uint index, address playerAddress) internal view returns(uint, uint) {
         uint senderIndex;
         uint opponentIndex;
 
-        if (players[index][0] == msg.sender) {
+        if (players[index][0] == playerAddress) {
             senderIndex = 0;
             opponentIndex = 1;
         }
@@ -160,13 +172,13 @@ contract PokerBettingProtocol {
         return (senderIndex, opponentIndex);
     }
 
-    function getPlayersPaybleAddress(uint index) internal view returns(address payable, address payable) {
+    function getPlayersPaybleAddress(uint index, address playerAddress) internal view returns(address payable, address payable) {
         address payable opponent;
-        if (players[index][0] == msg.sender)
+        if (players[index][0] == playerAddress)
             opponent = payable(players[index][1]);
         else
             opponent = payable(players[index][0]);
 
-        return (payable(msg.sender), opponent);
+        return (payable(playerAddress), opponent);
     }
 }
