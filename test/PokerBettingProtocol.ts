@@ -255,8 +255,8 @@ describe("PokerBettingProtocol", function () {
         });
     });
 
-    describe("Betting phase", async function () {
-        describe("Bet", async function () {
+    describe("Betting phase", function () {
+        describe("Bet", function () {
             it("Should do the first bet and emit a Rise event", async function () {
                 const { pokerBettingProtocol, account1, account2, breakTheHiddenCodeAddress, betIndex, oneEth } = await loadFixture(deployBetCreatedFixture);
 
@@ -284,6 +284,15 @@ describe("PokerBettingProtocol", function () {
                 await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).bet(5, account1, { "value": oneEth }))
                     .to.be.revertedWith(
                         "Index doesn't exists"
+                    );
+            });
+
+            it("Should fail because the address provided to the function is null", async function () {
+                const { pokerBettingProtocol, nullAddress, betIndex, breakTheHiddenCodeAddress, oneEth } = await loadFixture(deployBetCreatedFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).bet(betIndex, nullAddress, { "value": oneEth }))
+                    .to.be.revertedWith(
+                        "The provided address is null"
                     );
             });
 
@@ -372,7 +381,7 @@ describe("PokerBettingProtocol", function () {
             });
         });
 
-        describe("Fold", async function () {
+        describe("Fold", function () {
             it("Should fail because the function is not called by the BreakTheHiddenCode contract", async function () {
                 const { pokerBettingProtocol, account2, betIndex } = await loadFixture(deployFirstBetFixture);
 
@@ -388,6 +397,15 @@ describe("PokerBettingProtocol", function () {
                 await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).fold(5, account2))
                     .to.be.revertedWith(
                         "Index doesn't exists"
+                    );
+            });
+
+            it("Should fail because the provided address is null", async function () {
+                const { pokerBettingProtocol, betIndex, nullAddress, breakTheHiddenCodeAddress } = await loadFixture(deployFirstBetFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).fold(betIndex, nullAddress))
+                    .to.be.revertedWith(
+                        "The provided address is null"
                     );
             });
 
@@ -465,7 +483,7 @@ describe("PokerBettingProtocol", function () {
             });
         });
 
-        describe("Issue AFK", async function () {
+        describe("Issue AFK", function () {
             it("Should get its money back if the opponent doesn't respond after the first bet", async function () {
                 const { pokerBettingProtocol, oneEth, afkDeadline, betIndex, account1, nullAddress, breakTheHiddenCodeAddress } = await loadFixture(deployFirstBetFixture);
 
@@ -529,6 +547,24 @@ describe("PokerBettingProtocol", function () {
                     );
             });
 
+            it("Should fail because the address provided to the function is null", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, nullAddress, betIndex } = await loadFixture(deployBetCreatedFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, nullAddress))
+                    .to.be.revertedWith(
+                        "The provied address is null"
+                    );
+            });
+
+            it("Should fail because the an external address is trying to issue the afk", async function () {
+                const { pokerBettingProtocol, betIndex, breakTheHiddenCodeAddress, account3 } = await loadFixture(deployFirstBetFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account3))
+                    .to.be.revertedWith(
+                        "This address is not part of this betting"
+                    );
+            });
+
             it("Should fail because the user is trying to issue the AFK while it's his turn", async function () {
                 const { pokerBettingProtocol, betIndex, breakTheHiddenCodeAddress, account2 } = await loadFixture(deployFirstBetFixture);
 
@@ -567,13 +603,15 @@ describe("PokerBettingProtocol", function () {
         });
     });
 
-    describe("Withdraw phase", async function () {
+    describe("Withdraw phase", function () {
         it("Should give the entire bet to the winner", async function () {
             const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, twoEth, betIndex, nullAddress } = await loadFixture(deployAgreedBetFixture);
 
             const initialBalance = await hre.ethers.provider.getBalance(await account2.getAddress());
 
-            await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2);
+            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
+                .to.emit(pokerBettingProtocol, "Withdraw")
+                .withArgs(betIndex, account2, twoEth);
 
             const finalBalance = await hre.ethers.provider.getBalance(await account2.getAddress());
 
@@ -649,35 +687,51 @@ describe("PokerBettingProtocol", function () {
         });
     });
 
-    describe("Can game start", function () {
-        it("Should return true when the betting is done", async function () {
-            const { pokerBettingProtocol, betIndex } = await loadFixture(deployAgreedBetFixture);
-            
-            expect(await pokerBettingProtocol.isBetFinished(betIndex)).to.equal(true);
+    describe("Utils", function () {
+        describe("Can game start", function () {
+            it("Should return true when the betting is done", async function () {
+                const { pokerBettingProtocol, betIndex } = await loadFixture(deployAgreedBetFixture);
+                
+                expect(await pokerBettingProtocol.isBetFinished(betIndex)).to.equal(true);
+            });
+
+            it("Should return false when the betting is not done", async function () {
+                const { pokerBettingProtocol, betIndex } = await loadFixture(deployCoupleBetsFixture);
+
+                expect(await pokerBettingProtocol.isBetFinished(betIndex)).to.equal(false);
+            });
+
+            it("Should fail because the index doesn't exists", async function () {
+                const { pokerBettingProtocol } = await loadFixture(deployAgreedBetFixture);
+
+                await expect(pokerBettingProtocol.isBetFinished(5))
+                .to.be.revertedWith(
+                    "Index doesn't exists"
+                );
+            });
+
+            it("Should fail because the bet didn't start yet", async function () {
+                const { pokerBettingProtocol, betIndex } = await loadFixture(deployBetCreatedFixture);
+
+                await expect(pokerBettingProtocol.isBetFinished(betIndex))
+                .to.be.revertedWith(
+                    "Bet not started yet"
+                );
+            });
         });
 
-        it("Should return false when the betting is not done", async function () {
-            const { pokerBettingProtocol, betIndex } = await loadFixture(deployCoupleBetsFixture);
+        describe("Is bet created", function () {
+            it("Should return true because the bet is created", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, betIndex } = await loadFixture(deployBetCreatedFixture);
 
-            expect(await pokerBettingProtocol.isBetFinished(betIndex)).to.equal(false);
-        });
+                expect(await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).isBetCreated(betIndex)).to.equal(true);
+            });
 
-        it("Should fail because the index doesn't exists", async function () {
-            const { pokerBettingProtocol } = await loadFixture(deployAgreedBetFixture);
+            it("Should return false because the bet is not created", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, betIndex } = await loadFixture(deployPokerBettingProtocolFixture);
 
-            await expect(pokerBettingProtocol.isBetFinished(5))
-            .to.be.revertedWith(
-                "Index doesn't exists"
-            );
-        });
-
-        it("Should fail because the bet didn't start yet", async function () {
-            const { pokerBettingProtocol, betIndex } = await loadFixture(deployBetCreatedFixture);
-
-            await expect(pokerBettingProtocol.isBetFinished(betIndex))
-            .to.be.revertedWith(
-                "Bet not started yet"
-            );
+                expect(await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).isBetCreated(betIndex)).to.equal(false);
+            });
         });
     });
 });
