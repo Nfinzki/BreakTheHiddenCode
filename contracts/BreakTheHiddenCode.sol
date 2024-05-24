@@ -5,6 +5,18 @@ import "hardhat/console.sol";
 import "./PokerBettingProtocol.sol";
 
 contract BreakTheHiddenCode {
+    uint constant N = 5; //Length of the orderd sequence
+    uint constant M = 9; //Number of possible colors
+    uint constant K = 3; //Extra points to be rewarded
+    uint constant NT = 4; //Number of turns
+    uint constant NG = 5; //Number of guesses
+
+    struct Turn {
+        bytes1[NG][N] guesses;
+        uint[NG] correctColorPosition;
+        uint[NG] notCorrectColorPosition;
+    }
+
     /*  Variables declaration */
     uint256 private nextGameId;
 
@@ -19,18 +31,15 @@ contract BreakTheHiddenCode {
 
     PokerBettingProtocol pokerBetting;
 
-    uint constant N = 5; //Length of the orderd sequence
-    uint constant M = 9; //Number of possible colors
-    uint constant K = 3; //Extra points to be rewarded
-    uint constant NT = 4; //Number of turns
-    uint constant NG = 5; //Number of guesses
-
     bytes1[] public ammissibleColors;
 
     mapping(uint256 => address) public codeMaker;
     mapping(uint256 => uint[2]) points;
     mapping(uint256 => bytes32) public secretCodeHash;
     mapping(uint256 => string) public salt;
+    mapping(uint256 => Turn[NT]) turns;
+    mapping(uint256 => uint) currentTurn;
+    mapping(uint256 => uint) currentGuess;
 
     /*  Events declaration */
     event GameCreated(uint gameId);
@@ -44,6 +53,9 @@ contract BreakTheHiddenCode {
     event Afk(uint gameId, address issuerAddress);
     event CodeMakerSelected(uint gameId, address codeMakerAddress);
     event GameEnded(uint gameId, address winner, uint prize);
+    event Guess(uint gameId, bytes1[5] guess, uint turnNumber, uint guessNumber);
+    event Feedback(uint gameId, uint cc, uint nc, uint turnNumber, uint guessNumber);
+    event RevealSecret(uint gameId);
 
     /*  Constant utilities */
     uint32 constant gasLimit = 3000000;
@@ -70,6 +82,33 @@ contract BreakTheHiddenCode {
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
        
        _;
+    }
+
+    modifier validateGameForGuess(uint gameId, bytes1[] memory guess) {
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(codeMaker[gameId] != msg.sender, "Can't guess as CodeMaker");
+        require(secretCodeHash[gameId] != 0, "The secret is not yet published");
+        require(guess.length == 5, "Code sequence length must be 5");
+        require(validateColors(guess), "The colors provided are not valid");
+
+        uint turnNumber = currentTurn[gameId];
+        uint guessNumber = currentGuess[gameId];
+        require(isBytesArrayEmpty(turns[gameId][turnNumber].guesses[guessNumber]), "Guess already submitted. Wait for a feedback by the CodeMaker");
+        _;
+    }
+
+    modifier validateFeedback(uint gameId) {
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(codeMaker[gameId] == msg.sender, "Can't give a feedback as CodeBreaker");
+        
+        uint turnNumber = currentTurn[gameId];
+        uint guessNumber = currentGuess[gameId];
+
+        require(!isBytesArrayEmpty(turns[gameId][turnNumber].guesses[guessNumber]), "Guess not submitted yet. Wait for a guess by the CodeBreaker");
+        
+        _;
     }
 
     function createGame() external {
@@ -146,6 +185,8 @@ contract BreakTheHiddenCode {
 
             uint selectedCodeMaker = getRandom(2);
             codeMaker[gameId] = games[gameId][selectedCodeMaker];
+            currentTurn[gameId] = 0;
+            currentGuess[gameId] = 0;
             emit CodeMakerSelected(gameId, codeMaker[gameId]);
         } else
             emit Rise(gameId, betValue, msg.sender);
@@ -187,6 +228,38 @@ contract BreakTheHiddenCode {
         secretCodeHash[gameId] = secret;
 
         emit SecretPublished(gameId);
+    }
+
+    function tryGuess(uint gameId, bytes1[] memory guess) external validateGameForGuess(gameId, guess) {
+        uint turnNumber = currentTurn[gameId];
+        uint guessNumber = currentGuess[gameId];
+        bytes1[5] memory fixedSizeGuess = convertToFixedLength(guess);
+
+        turns[gameId][turnNumber].guesses[guessNumber] = fixedSizeGuess;
+        emit Guess(gameId, fixedSizeGuess, turnNumber, guessNumber);
+    }
+
+    function publishFeedback(uint gameId, uint cc, uint nc) external validateFeedback(gameId) {
+        uint turnNumber = currentTurn[gameId];
+        uint guessNumber = currentGuess[gameId];
+
+        turns[gameId][turnNumber].correctColorPosition[guessNumber] = cc;
+        turns[gameId][turnNumber].notCorrectColorPosition[guessNumber] = nc;
+
+        currentGuess[gameId]++;
+
+        if (cc == N) {
+            //TODO Implement correctGuess logic
+            emit RevealSecret(gameId);
+            return;
+        }
+
+        if (currentGuess[gameId] == NG) {
+            //TODO Implement Change turn logic
+            return;
+        }
+
+        emit Feedback(gameId, cc, nc, turnNumber, guessNumber);
     }
 
     function getRandom(uint upperBound) internal view returns (uint) {
@@ -236,4 +309,40 @@ contract BreakTheHiddenCode {
             }
         }
     }
+
+    function validateColors(bytes1[] memory colors) internal view returns(bool) {
+        for(uint i = 0; i < colors.length; i++) {
+            if (!findColor(colors[i]))
+                return false;
+        }
+
+        return true;
+    }
+
+    function findColor(bytes1 color) internal view returns(bool) {
+        for(uint i = 0; i < ammissibleColors.length; i++) {
+            if (color == ammissibleColors[i])
+                return true;
+        }
+
+        return false;
+    }
+
+    function convertToFixedLength(bytes1[] memory guess) internal pure returns (bytes1[5] memory) {
+        bytes1[5] memory fixedSizeGuess;
+        for (uint i = 0; i < guess.length; i++) {
+            fixedSizeGuess[i] = guess[i];
+        }
+        return fixedSizeGuess;
+    }
+
+    function isBytesArrayEmpty(bytes1[5] memory array) internal pure returns (bool) {
+        for (uint i = 0; i < array.length; i++) {
+            if (array[i] != 0x00) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
