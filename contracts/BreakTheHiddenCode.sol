@@ -33,10 +33,10 @@ contract BreakTheHiddenCode {
 
     bytes1[] public ammissibleColors;
 
-    mapping(uint256 => address) public codeMaker;
-    mapping(uint256 => uint[2]) points;
-    mapping(uint256 => bytes32) public secretCodeHash;
-    mapping(uint256 => string) public salt;
+    mapping(uint256 => uint[2]) public points;
+    mapping(uint256 => address[NT]) public codeMaker;
+    mapping(uint256 => bytes32[NT]) public secretCodeHash;
+    mapping(uint256 => string[NT]) public salt;
     mapping(uint256 => Turn[NT]) turns;
     mapping(uint256 => uint) currentTurn;
     mapping(uint256 => uint) currentGuess;
@@ -56,6 +56,7 @@ contract BreakTheHiddenCode {
     event Guess(uint gameId, bytes1[5] guess, uint turnNumber, uint guessNumber);
     event Feedback(uint gameId, uint cc, uint nc, uint turnNumber, uint guessNumber);
     event RevealSecret(uint gameId);
+    event PlayerDishonest(uint gameId, address dishonest);
 
     /*  Constant utilities */
     uint32 constant gasLimit = 3000000;
@@ -85,29 +86,40 @@ contract BreakTheHiddenCode {
     }
 
     modifier validateGameForGuess(uint gameId, bytes1[] memory guess) {
-        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
-        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
-        require(codeMaker[gameId] != msg.sender, "Can't guess as CodeMaker");
-        require(secretCodeHash[gameId] != 0, "The secret is not yet published");
-        require(guess.length == 5, "Code sequence length must be 5");
-        require(validateColors(guess), "The colors provided are not valid");
-
         uint turnNumber = currentTurn[gameId];
         uint guessNumber = currentGuess[gameId];
+
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(codeMaker[gameId][turnNumber] != msg.sender, "Can't guess as CodeMaker");
+        require(secretCodeHash[gameId][turnNumber] != 0, "The secret is not yet published");
+        require(guess.length == 5, "Code sequence length must be 5");
+        require(validateColors(guess), "The colors provided are not valid");
         require(isBytesArrayEmpty(turns[gameId][turnNumber].guesses[guessNumber]), "Guess already submitted. Wait for a feedback by the CodeMaker");
         _;
     }
 
     modifier validateFeedback(uint gameId) {
-        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
-        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
-        require(codeMaker[gameId] == msg.sender, "Can't give a feedback as CodeBreaker");
-        
         uint turnNumber = currentTurn[gameId];
         uint guessNumber = currentGuess[gameId];
 
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(codeMaker[gameId][turnNumber] == msg.sender, "Can't give a feedback as CodeBreaker");
         require(!isBytesArrayEmpty(turns[gameId][turnNumber].guesses[guessNumber]), "Guess not submitted yet. Wait for a guess by the CodeBreaker");
         
+        _;
+    }
+
+    modifier validateRevealSecret(uint gameId) {
+        uint turnNumber = currentTurn[gameId];
+        uint guessNumber = currentGuess[gameId];
+        
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(codeMaker[gameId][turnNumber] == msg.sender, "Can't reveal the secret as CodeBreaker");
+        require(turns[gameId][turnNumber].correctColorPosition[guessNumber] == N || !isBytesArrayEmpty(turns[gameId][turnNumber].guesses[NG - 1]), "Guesses for the CodeBreaker not finished yet");
+
         _;
     }
 
@@ -183,11 +195,13 @@ contract BreakTheHiddenCode {
         if (checked) {
             emit Check(gameId, betValue, msg.sender);
 
+            uint turnNumber = currentTurn[gameId];
+
             uint selectedCodeMaker = getRandom(2);
-            codeMaker[gameId] = games[gameId][selectedCodeMaker];
+            codeMaker[gameId][turnNumber] = games[gameId][selectedCodeMaker];
             currentTurn[gameId] = 0;
             currentGuess[gameId] = 0;
-            emit CodeMakerSelected(gameId, codeMaker[gameId]);
+            emit CodeMakerSelected(gameId, codeMaker[gameId][turnNumber]);
         } else
             emit Rise(gameId, betValue, msg.sender);
     }
@@ -223,9 +237,11 @@ contract BreakTheHiddenCode {
 
     function publishSecret(uint gameId, bytes32 secret) external validateGame(gameId) {
         require(pokerBetting.isBetFinished(gameId), "Bet is not finished yet");
-        require(codeMaker[gameId] == msg.sender, "Not the CodeMaker");
+        
+        uint turnNumber = currentTurn[gameId];
+        require(codeMaker[gameId][turnNumber] == msg.sender, "Not the CodeMaker");
 
-        secretCodeHash[gameId] = secret;
+        secretCodeHash[gameId][turnNumber] = secret;
 
         emit SecretPublished(gameId);
     }
@@ -249,17 +265,73 @@ contract BreakTheHiddenCode {
         currentGuess[gameId]++;
 
         if (cc == N) {
-            //TODO Implement correctGuess logic
+            addPoints(gameId, false);
             emit RevealSecret(gameId);
+
             return;
         }
 
         if (currentGuess[gameId] == NG) {
-            //TODO Implement Change turn logic
+            addPoints(gameId, true);
+            emit RevealSecret(gameId);
+
             return;
         }
 
         emit Feedback(gameId, cc, nc, turnNumber, guessNumber);
+    }
+
+    function revealSecret(uint gameId, bytes1[] memory guess, string memory _salt) external validateRevealSecret(gameId) {
+        uint turnNumber = currentTurn[gameId];
+
+        salt[gameId][turnNumber] = _salt;
+        bytes32 computedSecret = concatenateAndHash(guess, _salt);
+
+        if (computedSecret != secretCodeHash[gameId][turnNumber]) {
+            pokerBetting.withdraw(gameId, payable(getCodeBreakerAddress(gameId, msg.sender)));
+
+            emit PlayerDishonest(gameId, msg.sender);
+
+            //TODO Game termination
+        }
+
+        //TODO Implement: dispute window, move to next round, check if game terminated
+    }
+
+    function addPoints(uint gameId, bool extraPoints) internal {
+        uint awardedPoints = currentGuess[gameId];
+        uint turnNumber = currentTurn[gameId];
+
+        if (extraPoints)
+            awardedPoints += K;
+        
+        uint index = getCodeMakerIndex(gameId, codeMaker[gameId][turnNumber]);
+
+        points[gameId][index] += awardedPoints;
+    }
+
+    function changeTurn(uint gameId) internal {
+        //TODO Implement
+    }
+
+    function getCodeMakerIndex(uint index, address codeMakerAddress) internal view returns(uint) {
+        if (games[index][0] == codeMakerAddress)
+            return 0;
+        
+        if (games[index][1] == codeMakerAddress)
+            return 1;
+
+        revert("Invalid CodeMaker address");
+    }
+
+    function getCodeBreakerAddress(uint index, address codeMakerAddress) internal view returns(address) {
+        if (games[index][0] == codeMakerAddress)
+            return games[index][1];
+        
+        if (games[index][1] == codeMakerAddress)
+            return games[index][0];
+
+        revert("Invalid CodeMaker address");
     }
 
     function getRandom(uint upperBound) internal view returns (uint) {
@@ -345,4 +417,16 @@ contract BreakTheHiddenCode {
         return true;
     }
 
+    function concatenateAndHash(bytes1[] memory guess, string memory _salt) public pure returns (bytes32) {
+        bytes memory concatenated = abi.encodePacked(guessToBytes(guess), bytes(_salt));
+        return keccak256(concatenated);
+    }
+
+    function guessToBytes(bytes1[] memory guess) internal pure returns (bytes memory) {
+        bytes memory result = new bytes(guess.length);
+        for (uint i = 0; i < guess.length; i++) {
+            result[i] = guess[i];
+        }
+        return result;
+    }
 }
