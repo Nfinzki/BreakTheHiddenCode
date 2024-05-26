@@ -11,8 +11,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployBreakTheHiddenCodeFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -22,8 +24,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployBthcAndCreateAGameFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -35,8 +39,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployBthcAndCreateMultipleGamesFixture() {
         const [account1, account2, account3, account4] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -50,8 +56,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployBthcAndCreateAGameWithSpecificOpponentFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -63,8 +71,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployGameJoinedFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -82,8 +92,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployFirstBetFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -102,8 +114,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployCoupleBetsFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -125,8 +139,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployFoldFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -146,8 +162,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployAfkFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -170,8 +188,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployAgreedBetFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -205,8 +225,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployPublishedSecretFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -245,8 +267,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployGuessedOnceFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -293,8 +317,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployCorrectGuessedAtFirstTryFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -345,8 +371,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployCorrectGuessedAfterThreeTryFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -410,8 +438,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployNotAbleToBreakCodeFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -482,15 +512,19 @@ describe("BreakTheHiddenCode", function () {
 
         const cc = 4;
         const nc = 0;
+
+        const guessReference = 3;
         
-        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, salt, codeMakerIndex, codeBreakerIndex, cc, nc, turnNumber, twoEth };
+        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, salt, codeMakerIndex, codeBreakerIndex, cc, nc, turnNumber, twoEth, guessReference };
     }
 
     async function deployCorrectGuessWithFeedbackFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -544,8 +578,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployFeedbackToNotCorrectGuessFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -599,8 +635,10 @@ describe("BreakTheHiddenCode", function () {
     async function deployDishonestCodeMakerFixture() {
         const [account1, account2, account3] = await hre.ethers.getSigners();
 
+        const disputeWindow = 10;
+
         const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
-        const breakTheHiddenCode = await BreakTheHiddenCode.deploy();
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
 
         const gameId = 0;
         const nullAddress = "0x0000000000000000000000000000000000000000";
@@ -641,23 +679,104 @@ describe("BreakTheHiddenCode", function () {
 
         await breakTheHiddenCode.connect(codeMakerAddress).publishSecret(gameId, secretHash);
 
+        const cc = 4;
+        const nc = 0;
+
         let guess = ['R', 'G', 'B', 'R', 'R'];
         let bytesColors = getBytesColors(guess);
 
         await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
-        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 4, 0);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, cc, nc);
 
         guess = ['R', 'G', 'B', 'R', 'B'];
         bytesColors = getBytesColors(guess);
 
         await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
-        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 4, 0);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, cc, nc);
 
         guess = ['R', 'G', 'B', 'R', 'W'];
         bytesColors = getBytesColors(guess);
 
         await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
-        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 4, 0);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, cc, nc);
+
+        guess = ['R', 'G', 'B', 'R', 'O'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, cc, nc);
+
+        guess = ['R', 'G', 'B', 'R', 'P'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, cc, nc);
+
+        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, wrongSecret, salt, codeMakerIndex, codeBreakerIndex, cc, nc, turnNumber, twoEth };
+    }
+
+    async function deployRevealSecretWithHonestCodeMakerFixture() {
+        const [account1, account2, account3] = await hre.ethers.getSigners();
+
+        const disputeWindow = 10;
+
+        const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
+
+        const gameId = 0;
+        const nullAddress = "0x0000000000000000000000000000000000000000";
+
+        const oneEth = hre.ethers.parseEther("1");
+        const twoEth = hre.ethers.parseEther("2");
+
+        await breakTheHiddenCode["createGame()"]();
+        await breakTheHiddenCode.connect(account2).joinGame();
+        await breakTheHiddenCode.connect(account1).bet(gameId, {"value": oneEth});
+        await breakTheHiddenCode.connect(account2).bet(gameId, {"value": oneEth});
+
+        const turnNumber = 0;
+        
+        const codeMaker = await breakTheHiddenCode.codeMaker(gameId, turnNumber);
+        let codeMakerAddress;
+        let codeBreakerAddress;
+        let codeMakerIndex;
+        let codeBreakerIndex;
+
+        if (codeMaker === account1.address) {
+            codeMakerAddress = account1;
+            codeBreakerAddress = account2;
+            codeMakerIndex = 0;
+            codeBreakerIndex = 1;
+        } else {
+            codeMakerAddress = account2;
+            codeBreakerAddress = account1;
+            codeMakerIndex = 1;
+            codeBreakerIndex = 0;
+        }
+
+        const salt = "V3ryL0ngS4ltV4lu3";
+        const secretHash = hre.ethers.keccak256(hre.ethers.toUtf8Bytes("RGBRG" + salt));
+        const secret = getBytesColors(['R', 'G', 'B', 'R', 'G']);
+
+        await breakTheHiddenCode.connect(codeMakerAddress).publishSecret(gameId, secretHash);
+
+        let guess = ['G', 'G', 'B', 'Y', 'R'];
+        let bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 2, 2);
+
+        guess = ['G', 'B', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 1, 2);
+
+        guess = ['R', 'G', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 3, 1);
 
         guess = ['R', 'G', 'B', 'R', 'O'];
         bytesColors = getBytesColors(guess);
@@ -671,10 +790,238 @@ describe("BreakTheHiddenCode", function () {
         await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
         await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 4, 0);
 
-        const cc = 4;
-        const nc = 0;
+        await breakTheHiddenCode.connect(codeMakerAddress).revealSecret(gameId, secret, salt);
+
+        const disputeIndex = 3;
+                
+        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, salt, codeMakerIndex, codeBreakerIndex, turnNumber, disputeIndex, twoEth };
+    }
+
+    async function deployRevealSecretWithLessGuessWithHonestCodeMakerFixture() {
+        const [account1, account2, account3] = await hre.ethers.getSigners();
+
+        const disputeWindow = 10;
+
+        const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
+
+        const gameId = 0;
+        const nullAddress = "0x0000000000000000000000000000000000000000";
+
+        const oneEth = hre.ethers.parseEther("1");
+        const twoEth = hre.ethers.parseEther("2");
+
+        await breakTheHiddenCode["createGame()"]();
+        await breakTheHiddenCode.connect(account2).joinGame();
+        await breakTheHiddenCode.connect(account1).bet(gameId, {"value": oneEth});
+        await breakTheHiddenCode.connect(account2).bet(gameId, {"value": oneEth});
+
+        const turnNumber = 0;
         
-        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, wrongSecret, salt, codeMakerIndex, codeBreakerIndex, cc, nc, turnNumber, twoEth };
+        const codeMaker = await breakTheHiddenCode.codeMaker(gameId, turnNumber);
+        let codeMakerAddress;
+        let codeBreakerAddress;
+        let codeMakerIndex;
+        let codeBreakerIndex;
+
+        if (codeMaker === account1.address) {
+            codeMakerAddress = account1;
+            codeBreakerAddress = account2;
+            codeMakerIndex = 0;
+            codeBreakerIndex = 1;
+        } else {
+            codeMakerAddress = account2;
+            codeBreakerAddress = account1;
+            codeMakerIndex = 1;
+            codeBreakerIndex = 0;
+        }
+
+        const salt = "V3ryL0ngS4ltV4lu3";
+        const secretHash = hre.ethers.keccak256(hre.ethers.toUtf8Bytes("RGBRG" + salt));
+        const secret = getBytesColors(['R', 'G', 'B', 'R', 'G']);
+
+        await breakTheHiddenCode.connect(codeMakerAddress).publishSecret(gameId, secretHash);
+
+        let guess = ['G', 'G', 'B', 'Y', 'R'];
+        let bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 2, 2);
+
+        guess = ['G', 'B', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 1, 2);
+
+        guess = ['R', 'G', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 5, 0);
+
+        await breakTheHiddenCode.connect(codeMakerAddress).revealSecret(gameId, secret, salt);
+
+        const disputeIndex = 3;
+                
+        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, salt, codeMakerIndex, codeBreakerIndex, turnNumber, disputeIndex, twoEth };
+    }
+
+    async function deployRevealSecretWithElapsedDisputeTimeFixture() {
+        const [account1, account2, account3, account4, account5, account6] = await hre.ethers.getSigners();
+
+        const disputeWindow = 2;
+
+        const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
+
+        const gameId = 0;
+        const nullAddress = "0x0000000000000000000000000000000000000000";
+
+        const oneEth = hre.ethers.parseEther("1");
+        const twoEth = hre.ethers.parseEther("2");
+
+        await breakTheHiddenCode["createGame()"]();
+        await breakTheHiddenCode.connect(account2).joinGame();
+        await breakTheHiddenCode.connect(account1).bet(gameId, {"value": oneEth});
+        await breakTheHiddenCode.connect(account2).bet(gameId, {"value": oneEth});
+
+        const turnNumber = 0;
+        
+        const codeMaker = await breakTheHiddenCode.codeMaker(gameId, turnNumber);
+        let codeMakerAddress;
+        let codeBreakerAddress;
+        let codeMakerIndex;
+        let codeBreakerIndex;
+
+        if (codeMaker === account1.address) {
+            codeMakerAddress = account1;
+            codeBreakerAddress = account2;
+            codeMakerIndex = 0;
+            codeBreakerIndex = 1;
+        } else {
+            codeMakerAddress = account2;
+            codeBreakerAddress = account1;
+            codeMakerIndex = 1;
+            codeBreakerIndex = 0;
+        }
+
+        const salt = "V3ryL0ngS4ltV4lu3";
+        const secretHash = hre.ethers.keccak256(hre.ethers.toUtf8Bytes("RGBRG" + salt));
+        const secret = getBytesColors(['R', 'G', 'B', 'R', 'G']);
+
+        await breakTheHiddenCode.connect(codeMakerAddress).publishSecret(gameId, secretHash);
+
+        let guess = ['G', 'G', 'B', 'Y', 'R'];
+        let bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 2, 2);
+
+        guess = ['G', 'B', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 1, 2);
+
+        guess = ['R', 'G', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 5, 0);
+
+        await breakTheHiddenCode.connect(codeMakerAddress).revealSecret(gameId, secret, salt);
+
+        const disputeIndex = 2;
+
+        await breakTheHiddenCode.connect(account3)["createGame()"]();
+        await breakTheHiddenCode.connect(account4)["createGame()"]();
+        await breakTheHiddenCode.connect(account5)["createGame()"]();
+        await breakTheHiddenCode.connect(account6)["createGame()"]();
+                
+        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, salt, codeMakerIndex, codeBreakerIndex, turnNumber, disputeIndex, twoEth };
+    }
+
+    async function deployRevealSecretWithDishonestCodeMakerFixture() {
+        const [account1, account2, account3] = await hre.ethers.getSigners();
+
+        const disputeWindow = 10;
+
+        const BreakTheHiddenCode = await hre.ethers.getContractFactory("BreakTheHiddenCode");
+        const breakTheHiddenCode = await BreakTheHiddenCode.deploy(disputeWindow);
+
+        const gameId = 0;
+        const nullAddress = "0x0000000000000000000000000000000000000000";
+
+        const oneEth = hre.ethers.parseEther("1");
+        const twoEth = hre.ethers.parseEther("2");
+
+        await breakTheHiddenCode["createGame()"]();
+        await breakTheHiddenCode.connect(account2).joinGame();
+        await breakTheHiddenCode.connect(account1).bet(gameId, {"value": oneEth});
+        await breakTheHiddenCode.connect(account2).bet(gameId, {"value": oneEth});
+
+        const turnNumber = 0;
+        
+        const codeMaker = await breakTheHiddenCode.codeMaker(gameId, turnNumber);
+        let codeMakerAddress;
+        let codeBreakerAddress;
+        let codeMakerIndex;
+        let codeBreakerIndex;
+
+        if (codeMaker === account1.address) {
+            codeMakerAddress = account1;
+            codeBreakerAddress = account2;
+            codeMakerIndex = 0;
+            codeBreakerIndex = 1;
+        } else {
+            codeMakerAddress = account2;
+            codeBreakerAddress = account1;
+            codeMakerIndex = 1;
+            codeBreakerIndex = 0;
+        }
+
+        const salt = "V3ryL0ngS4ltV4lu3";
+        const secretHash = hre.ethers.keccak256(hre.ethers.toUtf8Bytes("RGBRG" + salt));
+        const secret = getBytesColors(['R', 'G', 'B', 'R', 'G']);
+
+        await breakTheHiddenCode.connect(codeMakerAddress).publishSecret(gameId, secretHash);
+
+        let guess = ['G', 'G', 'B', 'Y', 'R'];
+        let bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 2, 2);
+
+        guess = ['G', 'B', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 1, 2);
+
+        guess = ['R', 'G', 'B', 'Y', 'R'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 3, 1);
+
+        guess = ['R', 'G', 'B', 'R', 'O'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 3, 2);
+
+        guess = ['R', 'G', 'B', 'R', 'P'];
+        bytesColors = getBytesColors(guess);
+
+        await breakTheHiddenCode.connect( codeBreakerAddress).tryGuess(gameId, bytesColors);
+        await breakTheHiddenCode.connect(codeMakerAddress).publishFeedback(gameId, 4, 0);
+
+        await breakTheHiddenCode.connect(codeMakerAddress).revealSecret(gameId, secret, salt);
+
+        const disputeIndex = 3;
+                
+        return { breakTheHiddenCode, nullAddress, account1, account2, account3, gameId, codeBreakerAddress, codeMakerAddress, secret, salt, codeMakerIndex, codeBreakerIndex, turnNumber, disputeIndex, twoEth };
     }
 
     describe("Game creation", function () {
@@ -1285,7 +1632,7 @@ describe("BreakTheHiddenCode", function () {
     });
 
     describe("Reveal secret", function () {
-        it("Should move to the next round after checking the validity of the secret revealed", async function () {
+        it("Should open the dispute phase after checking the validity of the secret revealed", async function () {
             const { breakTheHiddenCode, codeMakerAddress, codeBreakerAddress, secret, salt, gameId } = await loadFixture(deployCorrectGuessWithFeedbackFixture);
 
             await expect(breakTheHiddenCode.connect(codeMakerAddress).revealSecret(gameId, secret, salt))
@@ -1350,6 +1697,101 @@ describe("BreakTheHiddenCode", function () {
             await expect(breakTheHiddenCode.connect(codeMakerAddress).revealSecret(gameId, secret, salt))
                 .to.be.revertedWith(
                     "Guesses from the CodeBreaker not finished yet"
+                );
+        });
+    });
+
+    describe("Dispute phase", async function () {
+        it("Should send the prize to the CodeMaker because it was honest and the CodeBreaker didn't belive it", async function () {
+            const { breakTheHiddenCode, codeBreakerAddress, codeMakerAddress, gameId, disputeIndex, twoEth } = await loadFixture(deployRevealSecretWithHonestCodeMakerFixture);
+
+            const response = await breakTheHiddenCode.connect(codeBreakerAddress).startDispute(gameId, disputeIndex);
+
+            await expect(response)
+                .to.emit(breakTheHiddenCode, "DisputeOutcome")
+                .withArgs(gameId, codeMakerAddress);
+
+            await expect(response).to.changeEtherBalances(
+                [codeMakerAddress],
+                [twoEth]
+                );
+        });
+
+        it("Should send the prize to the CodeBreaker because the CodeMaker was dishonest in the fourth feedback", async function () {
+            const { breakTheHiddenCode, codeBreakerAddress, gameId, disputeIndex, twoEth } = await loadFixture(deployRevealSecretWithDishonestCodeMakerFixture);
+
+            const response = await breakTheHiddenCode.connect(codeBreakerAddress).startDispute(gameId, disputeIndex);
+
+            await expect(response)
+                .to.emit(breakTheHiddenCode, "DisputeOutcome")
+                .withArgs(gameId, codeBreakerAddress);
+
+            await expect(response).to.changeEtherBalances(
+                [codeBreakerAddress],
+                [twoEth]
+                );
+        });
+
+        it("Should fail because the provided gameId doesn't exists", async function () {
+            const { breakTheHiddenCode, codeBreakerAddress, disputeIndex } = await loadFixture(deployRevealSecretWithHonestCodeMakerFixture);
+
+            await expect(breakTheHiddenCode.connect(codeBreakerAddress).startDispute(5, disputeIndex))
+                .to.be.revertedWith(
+                    "Game not found"
+                );
+        });
+
+        it("Should fail because the account is not authorized to partecipate to the game", async function () {
+            const { breakTheHiddenCode, account3, disputeIndex, gameId} = await loadFixture(deployRevealSecretWithHonestCodeMakerFixture);
+
+            await expect(breakTheHiddenCode.connect(account3).startDispute(gameId, disputeIndex))
+                .to.be.revertedWith(
+                    "Not authorized to interact with this game"
+                );
+        });
+
+        it("Should fail because the CodeMaker is trying to open a dispute", async function () {
+            const { breakTheHiddenCode, codeMakerAddress, disputeIndex, gameId } = await loadFixture(deployRevealSecretWithHonestCodeMakerFixture);
+
+            await expect(breakTheHiddenCode.connect(codeMakerAddress).startDispute(gameId, disputeIndex))
+                .to.be.revertedWith(
+                    "Can't open a dispute ad CodeMaker"
+                );
+        });
+
+        it("Should fail because the guess reference is not in the bound", async function () {
+            const { breakTheHiddenCode, codeBreakerAddress, gameId } = await loadFixture(deployRevealSecretWithHonestCodeMakerFixture);
+
+            await expect(breakTheHiddenCode.connect(codeBreakerAddress).startDispute(gameId, 10))
+                .to.be.revertedWith(
+                    "Guess reference must be less than 5"
+                );
+        });
+
+        it("Should fail because the CodeMaker didn't published the secret yet", async function () {
+            const { breakTheHiddenCode, codeBreakerAddress, gameId, guessReference } = await loadFixture(deployNotAbleToBreakCodeFixture);
+
+            await expect(breakTheHiddenCode.connect(codeBreakerAddress).startDispute(gameId, guessReference))
+                .to.be.revertedWith(
+                    "Secret code not published yet by the CodeMaker"
+                );
+        });
+
+        it("Should fail because the guess reference is not present", async function () {
+            const { breakTheHiddenCode, codeBreakerAddress, gameId, disputeIndex } = await loadFixture(deployRevealSecretWithLessGuessWithHonestCodeMakerFixture);
+
+            await expect(breakTheHiddenCode.connect(codeBreakerAddress).startDispute(gameId, disputeIndex))
+                .to.be.revertedWith(
+                    "Invalid guess reference"
+                );
+        });
+
+        it("Should fail because the dispute phase is elapsed", async function () {
+            const { breakTheHiddenCode, codeBreakerAddress, gameId, disputeIndex } = await loadFixture(deployRevealSecretWithElapsedDisputeTimeFixture);
+
+            await expect(breakTheHiddenCode.connect(codeBreakerAddress).startDispute(gameId, disputeIndex))
+                .to.be.revertedWith(
+                    "Dispute phase terminated"
                 );
         });
     });

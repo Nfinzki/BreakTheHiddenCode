@@ -10,9 +10,10 @@ contract BreakTheHiddenCode {
     uint constant K = 3; //Extra points to be rewarded
     uint constant NT = 4; //Number of turns
     uint constant NG = 5; //Number of guesses
+    uint disputeWindow; //Duration of the dispute time in blocks
 
     struct Turn {
-        bytes1[NG][N] guesses;
+        bytes1[N][NG] guesses;
         uint[NG] correctColorPosition;
         uint[NG] notCorrectColorPosition;
     }
@@ -36,10 +37,12 @@ contract BreakTheHiddenCode {
     mapping(uint256 => uint[2]) public points;
     mapping(uint256 => address[NT]) public codeMaker;
     mapping(uint256 => bytes32[NT]) public secretCodeHash;
+    mapping(uint256 => bytes1[N][NT]) public secretCode;
     mapping(uint256 => string[NT]) public salt;
     mapping(uint256 => Turn[NT]) turns;
     mapping(uint256 => uint) currentTurn;
     mapping(uint256 => uint) currentGuess;
+    mapping(uint256 => uint) disputeStart;
 
     /*  Events declaration */
     event GameCreated(uint gameId);
@@ -53,15 +56,18 @@ contract BreakTheHiddenCode {
     event Afk(uint gameId, address issuerAddress);
     event CodeMakerSelected(uint gameId, address codeMakerAddress);
     event GameEnded(uint gameId, address winner, uint prize);
-    event Guess(uint gameId, bytes1[5] guess, uint turnNumber, uint guessNumber);
+    event Guess(uint gameId, bytes1[N] guess, uint turnNumber, uint guessNumber);
     event Feedback(uint gameId, uint cc, uint nc, uint turnNumber, uint guessNumber);
     event RevealSecret(uint gameId);
     event PlayerDishonest(uint gameId, address dishonest);
+    event NewTurn(uint gameId, address codeMaker, address codeBreaker);
+    event DisputeAvailable(uint gameId);
+    event DisputeOutcome(uint gameId, address winner);
 
     /*  Constant utilities */
     uint32 constant gasLimit = 3000000;
     
-    constructor() {
+    constructor(uint _disputeWindow) {
         nextGameId = 0;
         pokerBetting = new PokerBettingProtocol(address(this), 30 seconds);
 
@@ -76,6 +82,9 @@ contract BreakTheHiddenCode {
         ammissibleColors.push('O'); //Orange
 
         require(ammissibleColors.length == M, "The number of colors doesn't match the provided colors");
+
+        require(_disputeWindow > 0, "Dispute window length must be greater than zero");
+        disputeWindow = _disputeWindow;
     }
 
     modifier validateGame(uint gameId) {
@@ -118,7 +127,23 @@ contract BreakTheHiddenCode {
         require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
         require(codeMaker[gameId][turnNumber] == msg.sender, "Can't reveal the secret as CodeBreaker");
-        require(turns[gameId][turnNumber].correctColorPosition[guessNumber] == N || !isBytesArrayEmpty(turns[gameId][turnNumber].guesses[NG - 1]), "Guesses for the CodeBreaker not finished yet");
+        require(guessNumber > 0, "CodeMaker didn't give the feedback yet");
+        require(turns[gameId][turnNumber].correctColorPosition[guessNumber - 1] == N || (!isBytesArrayEmpty(turns[gameId][turnNumber].guesses[NG - 1]) && currentGuess[gameId] == NG), "Guesses from the CodeBreaker not finished yet");
+
+        _;
+    }
+
+    modifier validateDispute(uint gameId, uint guessReference) {
+        uint turnNumber = currentTurn[gameId];
+        uint guessNumber = currentGuess[gameId];
+        
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(codeMaker[gameId][turnNumber] != msg.sender, "Can't open a dispute ad CodeMaker");
+        require(guessReference < NG, "Guess reference must be less than 5");
+        require(!isBytesArrayEmpty(secretCode[gameId][turnNumber]), "Secret code not published yet by the CodeMaker");
+        require(!isBytesArrayEmpty(turns[gameId][turnNumber].guesses[guessReference]), "Invalid guess reference");
+        require(block.number < disputeStart[gameId] + disputeWindow, "Dispute phase terminated");
 
         _;
     }
@@ -249,7 +274,7 @@ contract BreakTheHiddenCode {
     function tryGuess(uint gameId, bytes1[] memory guess) external validateGameForGuess(gameId, guess) {
         uint turnNumber = currentTurn[gameId];
         uint guessNumber = currentGuess[gameId];
-        bytes1[5] memory fixedSizeGuess = convertToFixedLength(guess);
+        bytes1[N] memory fixedSizeGuess = convertToFixedLength(guess);
 
         turns[gameId][turnNumber].guesses[guessNumber] = fixedSizeGuess;
         emit Guess(gameId, fixedSizeGuess, turnNumber, guessNumber);
@@ -265,14 +290,14 @@ contract BreakTheHiddenCode {
         currentGuess[gameId]++;
 
         if (cc == N) {
-            addPoints(gameId, false);
+            addPoints(gameId, false); //Move after the dispute window
             emit RevealSecret(gameId);
 
             return;
         }
 
         if (currentGuess[gameId] == NG) {
-            addPoints(gameId, true);
+            addPoints(gameId, true); //Move after the dispute window
             emit RevealSecret(gameId);
 
             return;
@@ -283,20 +308,63 @@ contract BreakTheHiddenCode {
 
     function revealSecret(uint gameId, bytes1[] memory guess, string memory _salt) external validateRevealSecret(gameId) {
         uint turnNumber = currentTurn[gameId];
+        address codeBrekerAddress = getCodeBreakerAddress(gameId, msg.sender);
+        bytes1[N] memory fixedSizeGuess = convertToFixedLength(guess);
 
         salt[gameId][turnNumber] = _salt;
+        secretCode[gameId][turnNumber] = fixedSizeGuess;
+
         bytes32 computedSecret = concatenateAndHash(guess, _salt);
 
         if (computedSecret != secretCodeHash[gameId][turnNumber]) {
-            pokerBetting.withdraw(gameId, payable(getCodeBreakerAddress(gameId, msg.sender)));
+            pokerBetting.withdraw(gameId, payable(codeBrekerAddress));
 
             emit PlayerDishonest(gameId, msg.sender);
 
             //TODO Game termination
         }
 
-        //TODO Implement: dispute window, move to next round, check if game terminated
+        disputeStart[gameId] = block.number;
+        emit DisputeAvailable(gameId);
     }
+
+    function startDispute(uint gameId, uint guessReference) external validateDispute(gameId, guessReference) {
+        uint turnNumber = currentTurn[gameId];
+
+        bytes1[N] memory guess = turns[gameId][turnNumber].guesses[guessReference];
+        uint cc = turns[gameId][turnNumber].correctColorPosition[guessReference];
+        uint nc = turns[gameId][turnNumber].notCorrectColorPosition[guessReference];
+        bytes1[N] memory code = secretCode[gameId][turnNumber];
+
+        address payable disputeWinner;
+
+        if (isCcEqual(code, guess, cc) && isNcEqual(code, guess, nc)) {
+            disputeWinner = payable(codeMaker[gameId][turnNumber]);
+        } else {
+            disputeWinner = payable(msg.sender);
+        }
+
+        pokerBetting.withdraw(gameId, disputeWinner);
+        emit DisputeOutcome(gameId, disputeWinner);
+
+        //TODO Game termination
+    }
+
+    function changeTurn(uint gameId) internal {
+        //TODO Implement
+    }
+        //TODO All of this goes after the dispute windows and the points computation
+        // if (gameFinished) {
+        //
+        // }
+
+        // Move to the next turn
+        // currentTurn[gameId]++;
+        // currentGuess[gameId] = 0;
+        // codeMaker[gameId][currentTurn[gameId]] = codeBrekerAddress;
+        // emit NewTurn(gameId, codeBrekerAddress, msg.sender);
+
+        //TODO Implement: dispute window, move to next round, check if game terminated
 
     function addPoints(uint gameId, bool extraPoints) internal {
         uint awardedPoints = currentGuess[gameId];
@@ -308,10 +376,6 @@ contract BreakTheHiddenCode {
         uint index = getCodeMakerIndex(gameId, codeMaker[gameId][turnNumber]);
 
         points[gameId][index] += awardedPoints;
-    }
-
-    function changeTurn(uint gameId) internal {
-        //TODO Implement
     }
 
     function getCodeMakerIndex(uint index, address codeMakerAddress) internal view returns(uint) {
@@ -400,15 +464,15 @@ contract BreakTheHiddenCode {
         return false;
     }
 
-    function convertToFixedLength(bytes1[] memory guess) internal pure returns (bytes1[5] memory) {
-        bytes1[5] memory fixedSizeGuess;
+    function convertToFixedLength(bytes1[] memory guess) internal pure returns (bytes1[N] memory) {
+        bytes1[N] memory fixedSizeGuess;
         for (uint i = 0; i < guess.length; i++) {
             fixedSizeGuess[i] = guess[i];
         }
         return fixedSizeGuess;
     }
 
-    function isBytesArrayEmpty(bytes1[5] memory array) internal pure returns (bool) {
+    function isBytesArrayEmpty(bytes1[N] memory array) internal pure returns (bool) {
         for (uint i = 0; i < array.length; i++) {
             if (array[i] != 0x00) {
                 return false;
@@ -428,5 +492,37 @@ contract BreakTheHiddenCode {
             result[i] = guess[i];
         }
         return result;
+    }
+
+    function isCcEqual(bytes1[N] memory secret, bytes1[N] memory guess, uint cc) internal pure returns(bool) {
+        uint computedCc = 0;
+
+        for (uint i = 0; i < N; i++)
+            if (secret[i] == guess[i])
+                computedCc++;
+        
+        return cc == computedCc;
+    }
+
+    function isNcEqual(bytes1[N] memory secret, bytes1[N] memory guess, uint nc) internal pure returns (bool) {
+        uint256[256] memory count1;
+        uint256[256] memory count2;
+        uint256 notCorrectlyPlaced = 0;
+
+        //Counts the occurrency of each byte when they are not equal in position i
+        for (uint256 i = 0; i < N; i++) {
+            if (secret[i] != guess[i]) {
+                count1[uint8(secret[i])]++;
+                count2[uint8(guess[i])]++;
+            }
+        }
+
+        for (uint256 i = 0; i < 256; i++) {
+            if (count1[i] > 0) { // The secret contains a color not correctly guessed
+                notCorrectlyPlaced += count2[i] < count1[i] ? count2[i] : count1[i];
+            }
+        }
+
+        return nc == notCorrectlyPlaced;
     }
 }
