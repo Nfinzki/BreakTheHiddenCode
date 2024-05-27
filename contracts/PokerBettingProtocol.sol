@@ -21,6 +21,7 @@ contract PokerBettingProtocol {
     event Fold(uint index);
     event Afk(uint index);
     event Withdraw(uint index, address receiver, uint amount);
+    event WithdrawTie(uint index, address player1, address player2);
 
     constructor(address _breakTheHiddenCodeAddress, uint256 _afkTolerance) {
         breakTheHiddenCodeAddress = _breakTheHiddenCodeAddress;
@@ -139,6 +140,27 @@ contract PokerBettingProtocol {
         emit Withdraw(index, winner, weiWon);
 
         return weiWon;
+    }
+
+    function withdrawTie(uint index) external validateBthcAddress() {
+        require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
+        require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
+        require(bets[index][0] == bets[index][1], "The bet is not already agreed");
+
+        address payable player1 = payable(players[index][0]);
+        address payable player2 = payable(players[index][1]);
+        uint amount1 = bets[index][0];
+        uint amount2 = bets[index][1];
+
+        players[index][0] = address(0);
+        players[index][1] = address(0);
+        bets[index][0] = 0;
+        bets[index][1] = 0;
+
+        player1.transfer(amount1);
+        player2.transfer(amount2);
+
+        emit WithdrawTie(index, player1, player2);
     }
 
     function isBetCreated(uint index) public view returns(bool) {

@@ -604,86 +604,165 @@ describe("PokerBettingProtocol", function () {
     });
 
     describe("Withdraw phase", function () {
-        it("Should give the entire bet to the winner", async function () {
-            const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, twoEth, betIndex, nullAddress } = await loadFixture(deployAgreedBetFixture);
+        describe("Withdraw with a winner", function() {
+            it("Should give the entire bet to the winner", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, twoEth, betIndex, nullAddress } = await loadFixture(deployAgreedBetFixture);
 
-            const initialBalance = await hre.ethers.provider.getBalance(await account2.getAddress());
+                const response = await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2);
 
-            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
-                .to.emit(pokerBettingProtocol, "Withdraw")
-                .withArgs(betIndex, account2, twoEth);
+                await expect(response)
+                    .to.emit(pokerBettingProtocol, "Withdraw")
+                    .withArgs(betIndex, account2, twoEth);
 
-            const finalBalance = await hre.ethers.provider.getBalance(await account2.getAddress());
+                await expect(response).to.changeEtherBalances(
+                    [pokerBettingProtocol, account2],
+                    [-twoEth, twoEth]
+                    );
 
-            expect(finalBalance - initialBalance).to.equal(twoEth);
+                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+            });
 
-            expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-            expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-            expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-            expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+            it("Should fail if an address that is not the breakTheHiddenCodeAddress try to call the withdraw method", async function () {
+                const { pokerBettingProtocol, account1, account2, betIndex } = await loadFixture(deployAgreedBetFixture);
+
+                await expect(pokerBettingProtocol.connect(account1).withdraw(betIndex, account2))
+                    .to.be.revertedWith(
+                        "This function can only be invoked by BreakTheHiddenCode contract"
+                    );
+            });
+
+            it("Should fail if the index doesn't exist", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2 } = await loadFixture(deployAgreedBetFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(5, account2))
+                    .to.be.revertedWith(
+                        "Index doesn't exist"
+                    );
+            });
+
+            it("Should fail if the winner address provided is not correct", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account3, betIndex } = await loadFixture(deployAgreedBetFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account3))
+                    .to.be.revertedWith(
+                        "Winner address doesn't exist"
+                    );
+            });
+
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw the same winner more than once", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployWithdrawedBetFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
+                    .to.be.revertedWith(
+                        "Index doesn't exist"
+                    )
+            });
+
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw a created but non-started bet", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployBetCreatedFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
+                    .to.be.revertedWith(
+                        "Bet not started yet"
+                    )
+            });
+
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw a non-agreed bet", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployCoupleBetsFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
+                    .to.be.revertedWith(
+                        "The bet is not already agreed"
+                    )
+            });
+
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw a folded bet", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployFoldedBetFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
+                    .to.be.revertedWith(
+                        "Index doesn't exist"
+                    )
+            });
         });
 
-        it("Should fail if an address that is not the breakTheHiddenCodeAddress try to call the withdraw method", async function () {
-            const { pokerBettingProtocol, account1, account2, betIndex } = await loadFixture(deployAgreedBetFixture);
+        describe("Withdraw with a tie", function () {
+            it("Should give the bets to their owners", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account1, account2, oneEth, twoEth, betIndex, nullAddress } = await loadFixture(deployAgreedBetFixture);
 
-            await expect(pokerBettingProtocol.connect(account1).withdraw(betIndex, account2))
-                .to.be.revertedWith(
-                    "This function can only be invoked by BreakTheHiddenCode contract"
-                );
-        });
+                const response = await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdrawTie(betIndex);
 
-        it("Should fail if the index doesn't exist", async function () {
-            const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2 } = await loadFixture(deployAgreedBetFixture);
+                await expect(response)
+                    .to.emit(pokerBettingProtocol, "WithdrawTie")
+                    .withArgs(betIndex, account1, account2);
 
-            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(5, account2))
-                .to.be.revertedWith(
-                    "Index doesn't exist"
-                );
-        });
+                await expect(response).to.changeEtherBalances(
+                    [pokerBettingProtocol, account1, account2],
+                    [-twoEth, oneEth, oneEth]
+                    );
 
-        it("Should fail if the winner address provided is not correct", async function () {
-            const { pokerBettingProtocol, breakTheHiddenCodeAddress, account3, betIndex } = await loadFixture(deployAgreedBetFixture);
+                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+            });
 
-            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account3))
-                .to.be.revertedWith(
-                    "Winner address doesn't exist"
-                );
-        });
+            it("Should fail if an address that is not the breakTheHiddenCodeAddress try to call the withdraw method", async function () {
+                const { pokerBettingProtocol, account1, betIndex } = await loadFixture(deployAgreedBetFixture);
 
-        it("Should fail if the BreakTheHiddenCode contract try to withdraw the same winner more than once", async function () {
-            const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployWithdrawedBetFixture);
+                await expect(pokerBettingProtocol.connect(account1).withdrawTie(betIndex))
+                    .to.be.revertedWith(
+                        "This function can only be invoked by BreakTheHiddenCode contract"
+                    );
+            });
 
-            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
-                .to.be.revertedWith(
-                    "Index doesn't exist"
-                )
-        });
+            it("Should fail if the index doesn't exist", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress } = await loadFixture(deployAgreedBetFixture);
 
-        it("Should fail if the BreakTheHiddenCode contract try to withdraw a created but non-started bet", async function () {
-            const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployBetCreatedFixture);
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdrawTie(5))
+                    .to.be.revertedWith(
+                        "Index doesn't exist"
+                    );
+            });
 
-            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
-                .to.be.revertedWith(
-                    "Bet not started yet"
-                )
-        });
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw the same winner more than once", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, betIndex } = await loadFixture(deployWithdrawedBetFixture);
 
-        it("Should fail if the BreakTheHiddenCode contract try to withdraw a non-agreed bet", async function () {
-            const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployCoupleBetsFixture);
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdrawTie(betIndex))
+                    .to.be.revertedWith(
+                        "Index doesn't exist"
+                    )
+            });
 
-            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
-                .to.be.revertedWith(
-                    "The bet is not already agreed"
-                )
-        });
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw a created but non-started bet", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, betIndex } = await loadFixture(deployBetCreatedFixture);
 
-        it("Should fail if the BreakTheHiddenCode contract try to withdraw a folded bet", async function () {
-            const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployFoldedBetFixture);
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdrawTie(betIndex))
+                    .to.be.revertedWith(
+                        "Bet not started yet"
+                    )
+            });
 
-            await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
-                .to.be.revertedWith(
-                    "Index doesn't exist"
-                )
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw a non-agreed bet", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, betIndex } = await loadFixture(deployCoupleBetsFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdrawTie(betIndex))
+                    .to.be.revertedWith(
+                        "The bet is not already agreed"
+                    )
+            });
+
+            it("Should fail if the BreakTheHiddenCode contract try to withdraw a folded bet", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, betIndex } = await loadFixture(deployFoldedBetFixture);
+
+                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdrawTie(betIndex))
+                    .to.be.revertedWith(
+                        "Index doesn't exist"
+                    )
+            });
         });
     });
 
