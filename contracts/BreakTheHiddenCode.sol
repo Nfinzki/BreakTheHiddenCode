@@ -11,6 +11,7 @@ contract BreakTheHiddenCode {
     uint constant NT = 4; //Number of turns
     uint constant NG = 5; //Number of guesses
     uint disputeWindow; //Duration of the dispute time in blocks
+    uint afkWindow; //Duration of the afk deadline in blocks
 
     struct Turn {
         bytes1[N][NG] guesses;
@@ -44,6 +45,12 @@ contract BreakTheHiddenCode {
     mapping(uint256 => uint) public currentGuess;
     mapping(uint256 => uint) disputeStart;
     mapping(uint256 => bool[NT]) isCodeGuessed;
+    mapping(uint256 => uint) afkStart;
+    mapping(uint256 => address) nextMoveTo;
+    mapping(uint256 => bool) public gameFinished;
+    mapping(uint256 => address) public winner;
+    mapping(uint256 => bool) public isGameTied;
+    mapping(uint256 => uint) public finalPrize;
 
     /*  Events declaration */
     event GameCreated(uint gameId);
@@ -57,6 +64,7 @@ contract BreakTheHiddenCode {
     event Afk(uint gameId, address issuerAddress);
     event CodeMakerSelected(uint gameId, address codeMakerAddress);
     event GameEnded(uint gameId, address winner, uint prize);
+    event GameEndedDueToAfk(uint gameId, address winner, uint prize);
     event Guess(uint gameId, bytes1[N] guess, uint turnNumber, uint guessNumber);
     event Feedback(uint gameId, uint cc, uint nc, uint turnNumber, uint guessNumber);
     event RevealSecret(uint gameId);
@@ -65,13 +73,14 @@ contract BreakTheHiddenCode {
     event DisputeAvailable(uint gameId);
     event DisputeOutcome(uint gameId, address winner);
     event GameEndedWithTie(uint gameId);
+    event Disconnected(address player);
 
     /*  Constant utilities */
     uint32 constant gasLimit = 3000000;
     
-    constructor(uint _disputeWindow) {
+    constructor(uint _disputeWindow, uint _afkWindow) {
         nextGameId = 0;
-        pokerBetting = new PokerBettingProtocol(address(this), 30 seconds);
+        pokerBetting = new PokerBettingProtocol(address(this));
 
         ammissibleColors.push('R'); //Red
         ammissibleColors.push('G'); //Green
@@ -87,11 +96,18 @@ contract BreakTheHiddenCode {
 
         require(_disputeWindow > 0, "Dispute window length must be greater than zero");
         disputeWindow = _disputeWindow;
+
+        require(_afkWindow > 0, "AFK window length must be greater than zero");
+        afkWindow = _afkWindow;
     }
 
     modifier validateGame(uint gameId) {
         require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
+        
+        if (afkStart[gameId] > 0)
+            require(afkStart[gameId] + afkWindow > block.number, "Can't execute this function because the AFK dispute elapsed without a move");
        
        _;
     }
@@ -102,11 +118,16 @@ contract BreakTheHiddenCode {
 
         require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
         require(codeMaker[gameId][turnNumber] != msg.sender, "Can't guess as CodeMaker");
         require(secretCodeHash[gameId][turnNumber] != 0, "The secret is not yet published");
         require(guess.length == 5, "Code sequence length must be 5");
         require(validateColors(guess), "The colors provided are not valid");
         require(isBytesArrayEmpty(turns[gameId][turnNumber].guesses[guessNumber]), "Guess already submitted. Wait for a feedback by the CodeMaker");
+        
+        if (afkStart[gameId] > 0)
+            require(afkStart[gameId] + afkWindow > block.number, "Can't execute this function because the AFK dispute elapsed without a move");
+        
         _;
     }
 
@@ -116,8 +137,12 @@ contract BreakTheHiddenCode {
 
         require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
         require(codeMaker[gameId][turnNumber] == msg.sender, "Can't give a feedback as CodeBreaker");
         require(!isBytesArrayEmpty(turns[gameId][turnNumber].guesses[guessNumber]), "Guess not submitted yet. Wait for a guess by the CodeBreaker");
+        
+        if (afkStart[gameId] > 0)
+            require(afkStart[gameId] + afkWindow > block.number, "Can't execute this function because the AFK dispute elapsed without a move");
         
         _;
     }
@@ -128,9 +153,13 @@ contract BreakTheHiddenCode {
         
         require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
         require(codeMaker[gameId][turnNumber] == msg.sender, "Can't reveal the secret as CodeBreaker");
         require(guessNumber > 0, "CodeMaker didn't give the feedback yet");
         require(turns[gameId][turnNumber].correctColorPosition[guessNumber - 1] == N || (!isBytesArrayEmpty(turns[gameId][turnNumber].guesses[NG - 1]) && currentGuess[gameId] == NG), "Guesses from the CodeBreaker not finished yet");
+        
+        if (afkStart[gameId] > 0)
+            require(afkStart[gameId] + afkWindow > block.number, "Can't execute this function because the AFK dispute elapsed without a move");
 
         _;
     }
@@ -141,6 +170,7 @@ contract BreakTheHiddenCode {
         
         require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
         require(codeMaker[gameId][turnNumber] != msg.sender, "Can't open a dispute as CodeMaker");
         require(guessReference < NG, "Guess reference must be less than 5");
         require(!isBytesArrayEmpty(secretCode[gameId][turnNumber]), "Secret code not published yet by the CodeMaker");
@@ -155,9 +185,35 @@ contract BreakTheHiddenCode {
 
         require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
         require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
         require(codeMaker[gameId][turnNumber] == msg.sender, "Can't change turn as CodeBreaker");
         require(!isBytesArrayEmpty(secretCode[gameId][turnNumber]), "Secret code not published yet by the CodeMaker");
         require(block.number > disputeStart[gameId] + disputeWindow, "Dispute phase not terminated yet");
+        
+        if (afkStart[gameId] > 0)
+            require(afkStart[gameId] + afkWindow > block.number, "Can't execute this function because the AFK dispute elapsed without a move");
+
+        _;
+    }
+
+    modifier validateEmitAfk(uint gameId) {
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
+        require(nextMoveTo[gameId] != msg.sender, "Can't emit an AFK while it's your turn");
+        require(afkStart[gameId] == 0, "Can't emit an AFK while another one is already in progress");
+        require(block.number > disputeStart[gameId] + disputeWindow, "Can't emit AFK during the dispute phase");
+
+        _;
+    }
+
+    modifier validateRedeemAfterAfk(uint gameId) {
+        require(games[gameId][0] != address(0) && games[gameId][1] != address(0), "Game not found");
+        require(games[gameId][0] == msg.sender || games[gameId][1] == msg.sender, "Not authorized to interact with this game");
+        require(!gameFinished[gameId], "The game is finished");
+        require(afkStart[gameId] > 0, "Afk not emitted");
+        require(nextMoveTo[gameId] != msg.sender, "Can't redeem an AFK while it's your turn");
+        require(afkStart[gameId] + afkWindow < block.number, "Can't redeem an AFK while there is still time left");
 
         _;
     }
@@ -205,6 +261,7 @@ contract BreakTheHiddenCode {
         emit UserJoined(msg.sender, gameId);
 
         pokerBetting.newBetting(games[gameId][0], games[gameId][1], gameId);
+        nextMoveTo[gameId] = games[gameId][0];
     }
 
     function joinGameById(uint gameId) external {
@@ -220,9 +277,25 @@ contract BreakTheHiddenCode {
         emit UserJoined(msg.sender, gameId);
 
         pokerBetting.newBetting(games[gameId][0], games[gameId][1], gameId);
+        nextMoveTo[gameId] = games[gameId][0];
+    }
+
+    function quitGame(uint gameId) external {
+        require(nextGameId > 0, "Currently there are no existing games");
+        require(games[gameId][0] == msg.sender, "The provided gameId is not associated to the address");
+        require(games[gameId][1] == address(0), "The game started");
+
+        if (games[gameId][2] == address(0))
+            removeJoinableGame(gameId);
+
+        removeConnectedPlayer(games[gameId][0]);
+
+        emit Disconnected(msg.sender);        
     }
 
     function bet(uint gameId) payable external validateGame(gameId) {
+        afkStart[gameId] = 0;
+
         (bool success, bytes memory data) = address(pokerBetting).call{value: msg.value, gas: gasLimit}(
             abi.encodeWithSignature("bet(uint256,address)", gameId, msg.sender)
             );
@@ -240,54 +313,60 @@ contract BreakTheHiddenCode {
             codeMaker[gameId][turnNumber] = games[gameId][selectedCodeMaker];
             currentTurn[gameId] = 0;
             currentGuess[gameId] = 0;
+            nextMoveTo[gameId] = games[gameId][selectedCodeMaker];
+
             emit CodeMakerSelected(gameId, codeMaker[gameId][turnNumber]);
-        } else
+        } else {
+            nextMoveTo[gameId] = getOpponent(gameId, msg.sender);
+            
             emit Rise(gameId, betValue, msg.sender);
+        }
     }
 
     function fold(uint gameId) external validateGame(gameId) {
+        afkStart[gameId] = 0;
+
         pokerBetting.fold(gameId, msg.sender);
 
         removeConnectedPlayer(games[gameId][0]);
         removeConnectedPlayer(games[gameId][1]);
-        games[gameId][0] = address(0);
-        games[gameId][1] = address(0);
+
+        nextMoveTo[gameId] = address(0);
+        gameFinished[gameId] = true;
 
         emit Fold(gameId, msg.sender);
-    }
-
-    function issueAfk(uint gameId) external validateGame(gameId) {
-        pokerBetting.issueAfk(gameId, msg.sender);
-
-        removeConnectedPlayer(games[gameId][0]);
-        removeConnectedPlayer(games[gameId][1]);
-        games[gameId][0] = address(0);
-        games[gameId][1] = address(0);
-
-        emit Afk(gameId, msg.sender);
     }
 
     function publishSecret(uint gameId, bytes32 secret) external validateGame(gameId) {
         require(pokerBetting.isBetFinished(gameId), "Bet is not finished yet");
         
+        afkStart[gameId] = 0;
+
         uint turnNumber = currentTurn[gameId];
         require(codeMaker[gameId][turnNumber] == msg.sender, "Not the CodeMaker");
 
         secretCodeHash[gameId][turnNumber] = secret;
+        nextMoveTo[gameId] = getCodeBreakerAddress(gameId, msg.sender);
 
         emit SecretPublished(gameId);
     }
 
     function tryGuess(uint gameId, bytes1[] memory guess) external validateGameForGuess(gameId, guess) {
+        afkStart[gameId] = 0;
+        
         uint turnNumber = currentTurn[gameId];
         uint guessNumber = currentGuess[gameId];
         bytes1[N] memory fixedSizeGuess = convertToFixedLength(guess);
 
         turns[gameId][turnNumber].guesses[guessNumber] = fixedSizeGuess;
+        nextMoveTo[gameId] = codeMaker[gameId][turnNumber];
+
         emit Guess(gameId, fixedSizeGuess, turnNumber, guessNumber);
     }
 
     function publishFeedback(uint gameId, uint cc, uint nc) external validateFeedback(gameId) {
+        afkStart[gameId] = 0;
+        
         uint turnNumber = currentTurn[gameId];
         uint guessNumber = currentGuess[gameId];
 
@@ -310,12 +389,15 @@ contract BreakTheHiddenCode {
             return;
         }
 
+        nextMoveTo[gameId] = getCodeBreakerAddress(gameId, msg.sender);
         emit Feedback(gameId, cc, nc, turnNumber, guessNumber);
     }
 
     function revealSecret(uint gameId, bytes1[] memory guess, string memory _salt) external validateRevealSecret(gameId) {
+        afkStart[gameId] = 0;
+        
         uint turnNumber = currentTurn[gameId];
-        address codeBrekerAddress = getCodeBreakerAddress(gameId, msg.sender);
+        address codeBreakerAddress = getCodeBreakerAddress(gameId, msg.sender);
         bytes1[N] memory fixedSizeGuess = convertToFixedLength(guess);
 
         salt[gameId][turnNumber] = _salt;
@@ -324,11 +406,13 @@ contract BreakTheHiddenCode {
         bytes32 computedSecret = concatenateAndHash(guess, _salt);
 
         if (computedSecret != secretCodeHash[gameId][turnNumber]) {
-            pokerBetting.withdraw(gameId, payable(codeBrekerAddress));
+            uint prize = pokerBetting.withdraw(gameId, payable(codeBreakerAddress));
 
             emit PlayerDishonest(gameId, msg.sender);
 
-            //TODO Game termination
+            gameFinished[gameId] = true;
+            winner[gameId] = codeBreakerAddress;
+            finalPrize[gameId] = prize;
         }
 
         disputeStart[gameId] = block.number;
@@ -351,13 +435,17 @@ contract BreakTheHiddenCode {
             disputeWinner = payable(msg.sender);
         }
 
-        pokerBetting.withdraw(gameId, disputeWinner);
+        uint prize = pokerBetting.withdraw(gameId, disputeWinner);
         emit DisputeOutcome(gameId, disputeWinner);
 
-        //TODO Game termination
+        gameFinished[gameId] = true;
+        winner[gameId] = disputeWinner;
+        finalPrize[gameId] = prize;
     }
 
     function changeTurn(uint gameId) external validateChangeTurn(gameId) {
+        afkStart[gameId] = 0;
+        
         uint turnNumber = currentTurn[gameId];
 
         //Points computation
@@ -377,6 +465,7 @@ contract BreakTheHiddenCode {
         currentGuess[gameId] = 0;
         address codeBreaker = getCodeBreakerAddress(gameId, msg.sender);
         codeMaker[gameId][currentTurn[gameId]] = codeBreaker;
+        nextMoveTo[gameId] = codeBreaker;
 
         emit NewTurn(gameId, codeBreaker, msg.sender);
     }
@@ -393,25 +482,49 @@ contract BreakTheHiddenCode {
     }
 
     function withdrawPrize(uint gameId) internal {
-        address payable winner;
+        address payable _winner;
+        uint prize;
+
+        gameFinished[gameId] = true;
 
         if (points[gameId][0] == points[gameId][1]) {
-            pokerBetting.withdrawTie(gameId);
+            prize = pokerBetting.withdrawTie(gameId);
+
+            isGameTied[gameId] = true;
+            finalPrize[gameId] = prize;
+
             emit GameEndedWithTie(gameId);
 
             return;
         }
 
         if (points[gameId][0] > points[gameId][1])
-            winner = payable(games[gameId][0]);
+            _winner = payable(games[gameId][0]);
         else
-            winner = payable(games[gameId][1]);
+            _winner = payable(games[gameId][1]);
         
-        uint prize = pokerBetting.withdraw(gameId, winner);
+        prize = pokerBetting.withdraw(gameId, _winner);
 
-        //TODO Game termination
+        winner[gameId] = _winner;
+        finalPrize[gameId] = prize;
 
-        emit GameEnded(gameId, winner, prize);
+        emit GameEnded(gameId, _winner, prize);
+    }
+
+    function emitAfk(uint gameId) external validateEmitAfk(gameId) {
+        afkStart[gameId] = block.number;
+
+        emit Afk(gameId, msg.sender);
+    }
+
+    function redeemAfterAfk(uint gameId) external validateRedeemAfterAfk(gameId) {
+        uint prize = pokerBetting.withdraw(gameId, payable(msg.sender));
+
+        gameFinished[gameId] = true;
+        winner[gameId] = msg.sender;
+        finalPrize[gameId] = prize;
+
+        emit GameEndedDueToAfk(gameId, msg.sender, prize);
     }
 
     function getCodeMakerIndex(uint index, address codeMakerAddress) internal view returns(uint) {
@@ -560,5 +673,15 @@ contract BreakTheHiddenCode {
         }
 
         return nc == notCorrectlyPlaced;
+    }
+
+    function getOpponent(uint gameId, address player) internal view returns(address) {
+        if (games[gameId][0] == player)
+            return games[gameId][1];
+        
+        if (games[gameId][1] == player)
+            return games[gameId][0];
+
+        revert("Invalid address provided");
     }
 }
