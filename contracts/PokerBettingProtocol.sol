@@ -8,9 +8,6 @@ contract PokerBettingProtocol {
     mapping(uint256 => address[2]) public players;
     mapping(uint256 => uint[2]) public bets;
     mapping(uint256 => address) public nextMove;
-    mapping(uint256 => uint256) public lastMove;
-
-    uint256 afkTolerance;
 
     address immutable breakTheHiddenCodeAddress;
 
@@ -23,9 +20,8 @@ contract PokerBettingProtocol {
     event Withdraw(uint index, address receiver, uint amount);
     event WithdrawTie(uint index, address player1, address player2);
 
-    constructor(address _breakTheHiddenCodeAddress, uint256 _afkTolerance) {
+    constructor(address _breakTheHiddenCodeAddress) {
         breakTheHiddenCodeAddress = _breakTheHiddenCodeAddress;
-        afkTolerance = _afkTolerance;
     }
 
     modifier validateCall(uint index, address playerAddress) {
@@ -70,8 +66,6 @@ contract PokerBettingProtocol {
         bets[index][senderIndex] += msg.value;
         nextMove[index] = players[index][opponentIndex];
 
-        lastMove[index] = block.timestamp; //Update the timestamp of the last move
-
         uint betDifference = senderBet + msg.value - opponentBet;
         if (betDifference == 0) {
             nextMove[index] = address(0);
@@ -101,32 +95,10 @@ contract PokerBettingProtocol {
         emit Fold(index);
     }
 
-    function issueAfk(uint index, address playerAddress) external validateBthcAddress() {
-        require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exists");
-        require(playerAddress != address(0), "The provied address is null");
-        require(players[index][0] == playerAddress || players[index][1] == playerAddress, "This address is not part of this betting");
-        require(nextMove[index] != playerAddress, "Invalid sender address. You can't issue the AFK status if it's your turn");
-        require(bets[index][0] != 0 || bets[index][1] != 0, "Bet not started yet");
-        require(block.timestamp > lastMove[index] + afkTolerance, "The opponent still has time to make a choice");
-
-        uint weiWon = bets[index][0] + bets[index][1];
-
-        players[index][0] = address(0);
-        players[index][1] = address(0);
-        nextMove[index] = address(0);
-        bets[index][0] = 0;
-        bets[index][1] = 0;
-
-        payable(playerAddress).transfer(weiWon);
-
-        emit Afk(index);
-    }
-
     function withdraw(uint index, address payable winner) external validateBthcAddress() returns(uint) {
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
         require(players[index][0] == winner || players[index][1] == winner, "Winner address doesn't exist");
-        require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
-        require(bets[index][0] == bets[index][1], "The bet is not already agreed");
+        require(bets[index][0] != 0 || bets[index][1] != 0, "Bet not started yet");
 
         uint weiWon = bets[index][0] + bets[index][1];
 
@@ -142,10 +114,10 @@ contract PokerBettingProtocol {
         return weiWon;
     }
 
-    function withdrawTie(uint index) external validateBthcAddress() {
+    function withdrawTie(uint index) external validateBthcAddress() returns(uint) {
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
         require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
-        require(bets[index][0] == bets[index][1], "The bet is not already agreed");
+        require(bets[index][0] == bets[index][1], "The bet is not agreed yet");
 
         address payable player1 = payable(players[index][0]);
         address payable player2 = payable(players[index][1]);
@@ -161,6 +133,8 @@ contract PokerBettingProtocol {
         player2.transfer(amount2);
 
         emit WithdrawTie(index, player1, player2);
+
+        return amount1;
     }
 
     function isBetCreated(uint index) public view returns(bool) {

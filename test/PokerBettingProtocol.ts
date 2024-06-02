@@ -7,13 +7,12 @@ import { extendEnvironment } from "hardhat/config";
 describe("PokerBettingProtocol", function () {
     async function deployPokerBettingProtocolFixture() {
         const [account1, account2, account3, account4, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
 
         const betIndex = 0;
         const betIndex2 = 1;
 
         const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
+        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -22,10 +21,9 @@ describe("PokerBettingProtocol", function () {
 
     async function deployBetCreatedFixture() {
         const [account1, account2, account3, account4, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
 
         const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
+        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -43,10 +41,9 @@ describe("PokerBettingProtocol", function () {
 
     async function deployFirstBetFixture() {
         const [account1, account2, account3, account4, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
 
         const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
+        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -70,10 +67,9 @@ describe("PokerBettingProtocol", function () {
 
     async function deployCoupleBetsFixture() {
         const [account1, account2, account3, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
 
         const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
+        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -94,10 +90,9 @@ describe("PokerBettingProtocol", function () {
 
     async function deployFoldedBetFixture() {
         const [account1, account2, account3, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
 
         const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
+        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -116,10 +111,9 @@ describe("PokerBettingProtocol", function () {
 
     async function deployAgreedBetFixture() {
         const [account1, account2, account3, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
 
         const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
+        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -136,39 +130,11 @@ describe("PokerBettingProtocol", function () {
         return { pokerBettingProtocol, nullAddress, account1, account2, account3, betIndex, breakTheHiddenCodeAddress, oneEth, halfEth, twoEth };
     }
 
-    async function deployAfkIssuedFixture() {
-        const [account1, account2, account3, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
-
-        const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
-
-        const nullAddress = "0x0000000000000000000000000000000000000000";
-
-        const betIndex = 0;
-
-        const oneEth = hre.ethers.parseEther("1");
-        const halfEth = hre.ethers.parseEther("0.5");
-        const twoEth = hre.ethers.parseEther("2");
-
-        await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).newBetting(account1, account2, betIndex);
-        await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).bet(betIndex, account1, { "value": oneEth });
-        await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).bet(betIndex, account2, { "value": twoEth });
-
-        const afkDeadline = (await time.latest()) + 31;
-        await time.increaseTo(afkDeadline);
-
-        await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account2);
-
-        return { pokerBettingProtocol, nullAddress, account1, account2, account3, betIndex, breakTheHiddenCodeAddress, oneEth, halfEth, twoEth, afkDeadline };
-    }
-
     async function deployWithdrawedBetFixture() {
         const [account1, account2, account3, breakTheHiddenCodeAddress] = await hre.ethers.getSigners();
-        const afkTime = 31;
 
         const PokerBettingProtocol = await hre.ethers.getContractFactory("PokerBettingProtocol");
-        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress, afkTime);
+        const pokerBettingProtocol = await PokerBettingProtocol.deploy(breakTheHiddenCodeAddress);
 
         const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -482,125 +448,6 @@ describe("PokerBettingProtocol", function () {
                 expect(await pokerBettingProtocol.players(betIndex2, "1")).to.equal(nullAddress);
             });
         });
-
-        describe("Issue AFK", function () {
-            it("Should get its money back if the opponent doesn't respond after the first bet", async function () {
-                const { pokerBettingProtocol, oneEth, afkDeadline, betIndex, account1, nullAddress, breakTheHiddenCodeAddress } = await loadFixture(deployFirstBetFixture);
-
-                await time.increaseTo(afkDeadline);
-
-                const response = pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account1);
-                await expect(response)
-                    .to.emit(pokerBettingProtocol, "Afk")
-                    .withArgs(betIndex);
-
-                await expect(response).to.changeEtherBalances(
-                    [pokerBettingProtocol, account1],
-                    [-oneEth, oneEth]
-                  );
-
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(nullAddress);
-            });
-
-            it("Should get its money back if the opponent takes too much time in any moment", async function () {
-                const { pokerBettingProtocol, oneEth, twoEth, afkDeadline, betIndex, account2, nullAddress, breakTheHiddenCodeAddress } = await loadFixture(deployCoupleBetsFixture);
-
-                await time.increaseTo(afkDeadline);
-
-                const response = pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account2);
-
-                await expect(response)
-                    .to.emit(pokerBettingProtocol, "Afk")
-                    .withArgs(betIndex);
-
-                await expect(response).to.changeEtherBalances(
-                    [pokerBettingProtocol, account2],
-                    [-(oneEth + twoEth), oneEth + twoEth]
-                    );
-
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(nullAddress);
-            });
-
-            it("Should fail because the function is not called by the BreakTheHiddenCode contract", async function () {
-                const { pokerBettingProtocol, betIndex, account2 } = await loadFixture(deployCoupleBetsFixture);
-
-                await expect(pokerBettingProtocol.issueAfk(betIndex, account2))
-                    .to.be.revertedWith(
-                        "This function can only be invoked by BreakTheHiddenCode contract"
-                    );
-            });
-
-            it("Should fail because index doesn't exist", async function () {
-                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2 } = await loadFixture(deployBetCreatedFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(5, account2))
-                    .to.be.revertedWith(
-                        "Index doesn't exists"
-                    );
-            });
-
-            it("Should fail because the address provided to the function is null", async function () {
-                const { pokerBettingProtocol, breakTheHiddenCodeAddress, nullAddress, betIndex } = await loadFixture(deployBetCreatedFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, nullAddress))
-                    .to.be.revertedWith(
-                        "The provied address is null"
-                    );
-            });
-
-            it("Should fail because the an external address is trying to issue the afk", async function () {
-                const { pokerBettingProtocol, betIndex, breakTheHiddenCodeAddress, account3 } = await loadFixture(deployFirstBetFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account3))
-                    .to.be.revertedWith(
-                        "This address is not part of this betting"
-                    );
-            });
-
-            it("Should fail because the user is trying to issue the AFK while it's his turn", async function () {
-                const { pokerBettingProtocol, betIndex, breakTheHiddenCodeAddress, account2 } = await loadFixture(deployFirstBetFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account2))
-                    .to.be.revertedWith(
-                        "Invalid sender address. You can't issue the AFK status if it's your turn"
-                    );
-            });
-
-            it("Should fail because the user is trying to issue the AFK while the bet is only created but not started", async function () {
-                const { pokerBettingProtocol, betIndex, breakTheHiddenCodeAddress, account2 } = await loadFixture(deployBetCreatedFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account2))
-                    .to.be.revertedWith(
-                        "Bet not started yet"
-                    );
-            });
-
-            it("Should fail because the user is trying to issue the AFK while the AFK tolerance didn't elapse yet", async function () {
-                const { pokerBettingProtocol, account1, betIndex, breakTheHiddenCodeAddress } = await loadFixture(deployFirstBetFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).issueAfk(betIndex, account1))
-                    .to.be.revertedWith(
-                        "The opponent still has time to make a choice"
-                    );
-            });
-
-            it("Should fail when trying to bet on a betting terminated by an AFK issuing", async function () {
-                const { pokerBettingProtocol, account1, betIndex, oneEth, breakTheHiddenCodeAddress } = await loadFixture(deployAfkIssuedFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).bet(betIndex, account1, { value: oneEth }))
-                    .to.be.revertedWith(
-                        "Index doesn't exists"
-                    );
-            });
-        });
     });
 
     describe("Withdraw phase", function () {
@@ -618,6 +465,26 @@ describe("PokerBettingProtocol", function () {
                     [pokerBettingProtocol, account2],
                     [-twoEth, twoEth]
                     );
+
+                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+            });
+
+            it("Should give only the first bet to the winner", async function () {
+                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex, nullAddress, oneEth } = await loadFixture(deployFirstBetFixture);
+
+                const response = await pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2);
+
+                await expect(response)
+                    .to.emit(pokerBettingProtocol, "Withdraw")
+                    .withArgs(betIndex, account2, oneEth);
+
+                await expect(response).to.changeEtherBalances(
+                    [pokerBettingProtocol, account2],
+                    [-oneEth, oneEth]
+                );
 
                 expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
                 expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
@@ -667,15 +534,6 @@ describe("PokerBettingProtocol", function () {
                 await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
                     .to.be.revertedWith(
                         "Bet not started yet"
-                    )
-            });
-
-            it("Should fail if the BreakTheHiddenCode contract try to withdraw a non-agreed bet", async function () {
-                const { pokerBettingProtocol, breakTheHiddenCodeAddress, account2, betIndex } = await loadFixture(deployCoupleBetsFixture);
-
-                await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdraw(betIndex, account2))
-                    .to.be.revertedWith(
-                        "The bet is not already agreed"
                     )
             });
 
@@ -751,7 +609,7 @@ describe("PokerBettingProtocol", function () {
 
                 await expect(pokerBettingProtocol.connect(breakTheHiddenCodeAddress).withdrawTie(betIndex))
                     .to.be.revertedWith(
-                        "The bet is not already agreed"
+                        "The bet is not agreed yet"
                     )
             });
 
