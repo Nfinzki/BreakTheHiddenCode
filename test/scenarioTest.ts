@@ -138,7 +138,7 @@ describe("Mastermind", function () {
 
             let turnNumberGame1 = 0;
             let guessNumberGame1 = 0;
-            let codeMakerGame1 = await mastermind.codeMaker(firstGameId, turnNumberGame1);
+            let codeMakerGame1 = await mastermind.getCodeMaker(firstGameId, turnNumberGame1);
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "CodeMakerSelected")
@@ -155,7 +155,7 @@ describe("Mastermind", function () {
 
             let turnNumberGame2 = 0;
             let guessNumberGame2 = 0;
-            let codeMakerGame2 = await mastermind.codeMaker(secondGameId, turnNumberGame2);
+            let codeMakerGame2 = await mastermind.getCodeMaker(secondGameId, turnNumberGame2);
 
             await expect(secondGameResponse)
                 .to.emit(mastermind, "CodeMakerSelected")
@@ -245,24 +245,24 @@ describe("Mastermind", function () {
             turnNumberGame1++;
             guessNumberGame1 = 0;
 
-            codeMakerGame1 = await mastermind.codeMaker(firstGameId, turnNumberGame1);
+            codeMakerGame1 = await mastermind.getCodeMaker(firstGameId, turnNumberGame1);
             let codeMakerIndexGame1, codeBreakerIndexGame1;
             ({ codeMakerAddress: codeMakerAddressGame1, codeBreakerAddress: codeBreakerAddressGame1, codeMakerIndex: codeMakerIndexGame1, codeBreakerIndex: codeBreakerIndexGame1 } = getPlayersRole(account1, account2, codeMakerGame1));
 
-            expect(await mastermind.points(firstGameId, codeBreakerIndexGame1)).to.equal(8); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
-            expect(await mastermind.points(firstGameId, codeMakerIndexGame1)).to.equal(0); //The actual CodeMaker is the previous CodeBreaker and didn't obtain points
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeBreakerIndexGame1)).to.equal(8); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeMakerIndexGame1)).to.equal(0); //The actual CodeMaker is the previous CodeBreaker and didn't obtain points
 
 
             await changeTurn(mastermind, secondGameId, codeMakerAddressGame2, codeBreakerAddressGame2);
             turnNumberGame2++;
             guessNumberGame2 = 0;
 
-            codeMakerGame2 = await mastermind.codeMaker(secondGameId, turnNumberGame2);
+            codeMakerGame2 = await mastermind.getCodeMaker(secondGameId, turnNumberGame2);
             let codeMakerIndexGame2, codeBreakerIndexGame2;
             ({ codeMakerAddress: codeMakerAddressGame2, codeBreakerAddress: codeBreakerAddressGame2, codeMakerIndex: codeMakerIndexGame2, codeBreakerIndex: codeBreakerIndexGame2 } = getPlayersRole(account3, account4, codeMakerGame2));
 
-            expect(await mastermind.points(secondGameId, codeBreakerIndexGame2)).to.equal(4); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
-            expect(await mastermind.points(secondGameId, codeMakerIndexGame2)).to.equal(0); //The actual CodeMaker is the previous CodeBreaker and didn't obtain points
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeBreakerIndexGame2)).to.equal(4); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeMakerIndexGame2)).to.equal(0); //The actual CodeMaker is the previous CodeBreaker and didn't obtain points
 
 
             /*      Publish Secret phase - Turn 2      */
@@ -323,22 +323,22 @@ describe("Mastermind", function () {
             turnNumberGame1++;
             guessNumberGame1 = 0;
 
-            codeMakerGame1 = await mastermind.codeMaker(firstGameId, turnNumberGame1);
+            codeMakerGame1 = await mastermind.getCodeMaker(firstGameId, turnNumberGame1);
             ({ codeMakerAddress: codeMakerAddressGame1, codeBreakerAddress: codeBreakerAddressGame1, codeMakerIndex: codeMakerIndexGame1, codeBreakerIndex: codeBreakerIndexGame1 } = getPlayersRole(account1, account2, codeMakerGame1));
 
-            expect(await mastermind.points(firstGameId, codeBreakerIndexGame1)).to.equal(3); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
-            expect(await mastermind.points(firstGameId, codeMakerIndexGame1)).to.equal(8); //The actual CodeMaker is the previous CodeBreaker
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeBreakerIndexGame1)).to.equal(3); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeMakerIndexGame1)).to.equal(8); //The actual CodeMaker is the previous CodeBreaker
 
 
             await changeTurn(mastermind, secondGameId, codeMakerAddressGame2, codeBreakerAddressGame2);
             turnNumberGame2++;
             guessNumberGame2 = 0;
 
-            codeMakerGame2 = await mastermind.codeMaker(secondGameId, turnNumberGame2);
+            codeMakerGame2 = await mastermind.getCodeMaker(secondGameId, turnNumberGame2);
             ({ codeMakerAddress: codeMakerAddressGame2, codeBreakerAddress: codeBreakerAddressGame2, codeMakerIndex: codeMakerIndexGame2, codeBreakerIndex: codeBreakerIndexGame2 } = getPlayersRole(account3, account4, codeMakerGame2));
 
-            expect(await mastermind.points(secondGameId, codeBreakerIndexGame2)).to.equal(1); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
-            expect(await mastermind.points(secondGameId, codeMakerIndexGame2)).to.equal(4); //The actual CodeMaker is the previous CodeBreaker
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeBreakerIndexGame2)).to.equal(1); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeMakerIndexGame2)).to.equal(4); //The actual CodeMaker is the previous CodeBreaker
 
 
             /*      Publish Secret phase - Turn 3      */
@@ -385,22 +385,22 @@ describe("Mastermind", function () {
             turnNumberGame1++;
             guessNumberGame1 = 0;
 
-            codeMakerGame1 = await mastermind.codeMaker(firstGameId, turnNumberGame1);
+            codeMakerGame1 = await mastermind.getCodeMaker(firstGameId, turnNumberGame1);
             ({ codeMakerAddress: codeMakerAddressGame1, codeBreakerAddress: codeBreakerAddressGame1, codeMakerIndex: codeMakerIndexGame1, codeBreakerIndex: codeBreakerIndexGame1 } = getPlayersRole(account1, account2, codeMakerGame1));
 
-            expect(await mastermind.points(firstGameId, codeBreakerIndexGame1)).to.equal(9); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
-            expect(await mastermind.points(firstGameId, codeMakerIndexGame1)).to.equal(3); //The actual CodeMaker is the previous CodeBreaker
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeBreakerIndexGame1)).to.equal(9); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeMakerIndexGame1)).to.equal(3); //The actual CodeMaker is the previous CodeBreaker
 
 
             await changeTurn(mastermind, secondGameId, codeMakerAddressGame2, codeBreakerAddressGame2);
             turnNumberGame2++;
             guessNumberGame2 = 0;
 
-            codeMakerGame2 = await mastermind.codeMaker(secondGameId, turnNumberGame2);
+            codeMakerGame2 = await mastermind.getCodeMaker(secondGameId, turnNumberGame2);
             ({ codeMakerAddress: codeMakerAddressGame2, codeBreakerAddress: codeBreakerAddressGame2, codeMakerIndex: codeMakerIndexGame2, codeBreakerIndex: codeBreakerIndexGame2 } = getPlayersRole(account3, account4, codeMakerGame2));
 
-            expect(await mastermind.points(secondGameId, codeBreakerIndexGame2)).to.equal(5); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
-            expect(await mastermind.points(secondGameId, codeMakerIndexGame2)).to.equal(1); //The actual CodeMaker is the previous CodeBreaker
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeBreakerIndexGame2)).to.equal(5); //The actual CodeBreaker is the previous CodeMaker that obtainted the points
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeMakerIndexGame2)).to.equal(1); //The actual CodeMaker is the previous CodeBreaker
 
 
             /*      Publish Secret phase - Turn 4      */
@@ -467,8 +467,8 @@ describe("Mastermind", function () {
                 .to.emit(mastermind, "GameEnded")
                 .withArgs(firstGameId, codeBreakerAddressGame1, twoEth);
 
-            expect(await mastermind.points(firstGameId, codeMakerIndexGame1)).to.equal(4);
-            expect(await mastermind.points(firstGameId, codeBreakerIndexGame1)).to.equal(9);
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeMakerIndexGame1)).to.equal(4);
+            expect(await mastermind.getPointsForPlayer(firstGameId, codeBreakerIndexGame1)).to.equal(9);
             await expect(firstGameResponse).to.changeEtherBalance(codeBreakerAddressGame1, twoEth);
 
 
@@ -476,8 +476,8 @@ describe("Mastermind", function () {
                 .to.emit(mastermind, "GameEndedWithTie")
                 .withArgs(secondGameId);
 
-            expect(await mastermind.points(secondGameId, codeMakerIndexGame2)).to.equal(5);
-            expect(await mastermind.points(secondGameId, codeBreakerIndexGame2)).to.equal(5);
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeMakerIndexGame2)).to.equal(5);
+            expect(await mastermind.getPointsForPlayer(secondGameId, codeBreakerIndexGame2)).to.equal(5);
             await expect(firstGameResponse).to.changeEtherBalance(codeBreakerAddressGame1, twoEth);
         });
 
@@ -545,7 +545,7 @@ describe("Mastermind", function () {
 
             let turnNumber = 0;
             let guessNumber = 0;
-            let codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+            let codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "CodeMakerSelected")
@@ -642,7 +642,7 @@ describe("Mastermind", function () {
 
             let turnNumber = 0;
             let guessNumber = 0;
-            let codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+            let codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "CodeMakerSelected")
@@ -739,7 +739,7 @@ describe("Mastermind", function () {
 
             let turnNumber = 0;
             let guessNumber = 0;
-            let codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+            let codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "CodeMakerSelected")

@@ -231,7 +231,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -260,7 +260,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
 
         let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
 
@@ -294,7 +294,7 @@ describe("Mastermind", function () {
         const turnNumber = 0;
         const guessNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -328,7 +328,7 @@ describe("Mastermind", function () {
         const turnNumber = 0;
         const guessNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -365,7 +365,7 @@ describe("Mastermind", function () {
         const turnNumber = 0;
         const guessNumber = 0;
 
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -407,7 +407,7 @@ describe("Mastermind", function () {
         const turnNumber = 0;
         const guessNumber = 0;
 
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -453,7 +453,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         await aTurn(mastermind, codeMakerAddress, codeBreakerAddress, gameId, "RGBRG", getBytesColors(['R', 'G', 'B', 'R', 'G']), getBytesColors(['R', 'G', 'B', 'R', 'G']), account3, account4, true);
@@ -483,7 +483,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
 
@@ -545,7 +545,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -614,7 +614,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -686,7 +686,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -729,7 +729,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -777,7 +777,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -821,7 +821,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -890,7 +890,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -958,7 +958,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -1014,7 +1014,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -1075,7 +1075,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -1141,7 +1141,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         const salt = "V3ryL0ngS4ltV4lu3";
@@ -1209,7 +1209,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         await aTurn(mastermind, codeMakerAddress, codeBreakerAddress, gameId, "RGBRG", getBytesColors(['R', 'G', 'B', 'R', 'G']), getBytesColors(['R', 'G', 'B', 'R', 'G']), account3, account4, true);
@@ -1242,7 +1242,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         await aTurn(mastermind, codeMakerAddress, codeBreakerAddress, gameId, "RGBRG", getBytesColors(['R', 'G', 'B', 'R', 'G']), getBytesColors(['R', 'G', 'B', 'R', 'G']), account3, account4, true);
@@ -1294,7 +1294,7 @@ describe("Mastermind", function () {
 
         const turnNumber = 0;
         
-        const codeMaker = await mastermind.codeMaker(gameId, turnNumber);
+        const codeMaker = await mastermind.getCodeMaker(gameId, turnNumber);
         let { codeMakerAddress, codeBreakerAddress, codeMakerIndex, codeBreakerIndex } = getPlayersRole(account1, account2, codeMaker);
 
         await aTurn(mastermind, codeMakerAddress, codeBreakerAddress, gameId, "RGBRG", getBytesColors(['R', 'G', 'B', 'R', 'G']), getBytesColors(['R', 'G', 'B', 'R', 'G']), account3, account4, true);
@@ -1397,9 +1397,9 @@ describe("Mastermind", function () {
                 .to.emit(mastermind, "GameCreated")
                 .withArgs(0);
 
-            expect(await mastermind.games("0", "0")).to.equal(account1.address);
-            expect(await mastermind.games("0", "1")).to.equal(nullAddress);
-            expect(await mastermind.games("0", "2")).to.equal(nullAddress);
+            expect(await mastermind.getPlayerAddress("0", "0")).to.equal(account1.address);
+            expect(await mastermind.getPlayerAddress("0", "1")).to.equal(nullAddress);
+            expect(await mastermind.getInvitedPlayer("0")).to.equal(nullAddress);
         });
 
         it("Should fail when a user is trying to create a second game", async function () {
@@ -1418,9 +1418,9 @@ describe("Mastermind", function () {
                 .to.emit(mastermind, "GameCreatedForAnOpponent")
                 .withArgs(0, account2);
 
-            expect(await mastermind.games("0", "0")).to.equal(account1.address);
-            expect(await mastermind.games("0", "1")).to.equal(nullAddress);
-            expect(await mastermind.games("0", "2")).to.equal(account2);
+            expect(await mastermind.getPlayerAddress("0", "0")).to.equal(account1.address);
+            expect(await mastermind.getPlayerAddress("0", "1")).to.equal(nullAddress);
+            expect(await mastermind.getInvitedPlayer("0")).to.equal(account2);
         });
 
         it("Should fail when a user is trying to create a game specifying an opponent but is already connected to a game", async function() {
@@ -1656,7 +1656,7 @@ describe("Mastermind", function () {
 
                 await expect(response).to.changeEtherBalance(account1, oneEth);
 
-                expect(await mastermind.gameFinished(gameId)).to.equal(true);
+                expect(await mastermind.isGameFinished(gameId)).to.equal(true);
                 expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
             });
 
@@ -1741,7 +1741,7 @@ describe("Mastermind", function () {
                 .to.emit(mastermind, "SecretPublished")
                 .withArgs(gameId, secret);
 
-            expect(await mastermind.secretCodeHash(gameId, turnNumber)).to.equal(secret);
+            expect(await mastermind.getSecretCodeHash(gameId, turnNumber)).to.equal(secret);
         });
 
         it("Should fail because the game doesn't exists", async function () {
@@ -2035,9 +2035,9 @@ describe("Mastermind", function () {
             
             await expect(response).to.changeEtherBalance(codeBreakerAddress, twoEth);
 
-            expect(await mastermind.gameFinished(gameId)).to.equal(true);
-            expect(await mastermind.winner(gameId)).to.equal(codeBreakerAddress);
-            expect(await mastermind.finalPrize(gameId)).to.equal(twoEth);
+            expect(await mastermind.isGameFinished(gameId)).to.equal(true);
+            expect(await mastermind.getWinner(gameId)).to.equal(codeBreakerAddress);
+            expect(await mastermind.getFinalPrize(gameId)).to.equal(twoEth);
             expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
         });
 
@@ -2126,9 +2126,9 @@ describe("Mastermind", function () {
 
             await expect(response).to.changeEtherBalance(codeMakerAddress, twoEth);
 
-            expect(await mastermind.gameFinished(gameId)).to.equal(true);
-            expect(await mastermind.winner(gameId)).to.equal(codeMakerAddress);
-            expect(await mastermind.finalPrize(gameId)).to.equal(twoEth);
+            expect(await mastermind.isGameFinished(gameId)).to.equal(true);
+            expect(await mastermind.getWinner(gameId)).to.equal(codeMakerAddress);
+            expect(await mastermind.getFinalPrize(gameId)).to.equal(twoEth);
             expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
         });
 
@@ -2143,9 +2143,9 @@ describe("Mastermind", function () {
 
             await expect(response).to.changeEtherBalance(codeBreakerAddress, twoEth);
             
-            expect(await mastermind.gameFinished(gameId)).to.equal(true);
-            expect(await mastermind.winner(gameId)).to.equal(codeBreakerAddress);
-            expect(await mastermind.finalPrize(gameId)).to.equal(twoEth);
+            expect(await mastermind.isGameFinished(gameId)).to.equal(true);
+            expect(await mastermind.getWinner(gameId)).to.equal(codeBreakerAddress);
+            expect(await mastermind.getFinalPrize(gameId)).to.equal(twoEth);
             expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
         });
 
@@ -2230,8 +2230,8 @@ describe("Mastermind", function () {
                 .to.emit(mastermind, "NewTurn")
                 .withArgs(gameId, codeBreakerAddress, codeMakerAddress);
 
-            expect(await mastermind.currentTurn(gameId)).to.equal(1);
-            expect(await mastermind.currentGuess(gameId)).to.equal(0);
+            expect(await mastermind.getCurrentTurn(gameId)).to.equal(1);
+            expect(await mastermind.getCurrentGuess(gameId)).to.equal(0);
         });
 
         it("Should end the game after the last turn, compute the final points and send the prize to the winner", async function () {
@@ -2245,9 +2245,9 @@ describe("Mastermind", function () {
 
             await expect(response).to.changeEtherBalance(winner, twoEth);
 
-            expect(await mastermind.gameFinished(gameId)).to.equal(true);
-            expect(await mastermind.winner(gameId)).to.equal(winner);
-            expect(await mastermind.finalPrize(gameId)).to.equal(twoEth);
+            expect(await mastermind.isGameFinished(gameId)).to.equal(true);
+            expect(await mastermind.getWinner(gameId)).to.equal(winner);
+            expect(await mastermind.getFinalPrize(gameId)).to.equal(twoEth);
             expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
         });
 
@@ -2265,10 +2265,10 @@ describe("Mastermind", function () {
                 [oneEth, oneEth]
                 );
 
-            expect(await mastermind.gameFinished(gameId)).to.equal(true);
+            expect(await mastermind.isGameFinished(gameId)).to.equal(true);
             expect(await mastermind.isGameTied(gameId)).to.equal(true);
-            expect(await mastermind.winner(gameId)).to.equal(nullAddress);
-            expect(await mastermind.finalPrize(gameId)).to.equal(oneEth);
+            expect(await mastermind.getWinner(gameId)).to.equal(nullAddress);
+            expect(await mastermind.getFinalPrize(gameId)).to.equal(oneEth);
         });
 
         it("Should fail because the provided gameId wasn't found", async function () {
@@ -2339,22 +2339,22 @@ describe("Mastermind", function () {
         it("Should add one point without extra", async function () {
             const { mastermind, codeMakerIndex, codeBreakerIndex, gameId } = await loadFixture(deployCorrectGuessedAtFirstTryFixture);
             
-            expect(await mastermind.points(gameId, codeMakerIndex)).to.equal(1);
-            expect(await mastermind.points(gameId, codeBreakerIndex)).to.equal(0);
+            expect(await mastermind.getPointsForPlayer(gameId, codeMakerIndex)).to.equal(1);
+            expect(await mastermind.getPointsForPlayer(gameId, codeBreakerIndex)).to.equal(0);
         });
 
         it("Should add three points without extra", async function () {
             const { mastermind, codeMakerIndex, codeBreakerIndex, gameId } = await loadFixture(deployCorrectGuessedAfterThreeTryFixture);
 
-            expect(await mastermind.points(gameId, codeMakerIndex)).to.equal(3);
-            expect(await mastermind.points(gameId, codeBreakerIndex)).to.equal(0);
+            expect(await mastermind.getPointsForPlayer(gameId, codeMakerIndex)).to.equal(3);
+            expect(await mastermind.getPointsForPlayer(gameId, codeBreakerIndex)).to.equal(0);
         });
 
         it("Should add five points with extra points", async function () {
             const { mastermind, codeMakerIndex, codeBreakerIndex, gameId } = await loadFixture(deployNotAbleToBreakCodeFixture);
 
-            expect(await mastermind.points(gameId, codeMakerIndex)).to.equal(5 + 3);
-            expect(await mastermind.points(gameId, codeBreakerIndex)).to.equal(0);
+            expect(await mastermind.getPointsForPlayer(gameId, codeMakerIndex)).to.equal(5 + 3);
+            expect(await mastermind.getPointsForPlayer(gameId, codeBreakerIndex)).to.equal(0);
         });
     });
 
@@ -2475,9 +2475,9 @@ describe("Mastermind", function () {
 
                 await expect(response).to.changeEtherBalance(account1, oneEth);
 
-                expect(await mastermind.gameFinished(gameId)).to.equal(true);
-                expect(await mastermind.winner(gameId)).to.equal(account1);
-                expect(await mastermind.finalPrize(gameId)).to.equal(oneEth);
+                expect(await mastermind.isGameFinished(gameId)).to.equal(true);
+                expect(await mastermind.getWinner(gameId)).to.equal(account1);
+                expect(await mastermind.getFinalPrize(gameId)).to.equal(oneEth);
                 expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
         });
 

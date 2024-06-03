@@ -158,9 +158,9 @@ describe("PokerBettingProtocol", function () {
                 .to.emit(pokerBettingProtocol, "NewBet")
                 .withArgs(betIndex);
 
-            expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(account1.address);
-            expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(account2.address);
-            expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(account1.address);
+            expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "0")).to.equal(account1.address);
+            expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "1")).to.equal(account2.address);
+            expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(account1.address);
         });
 
         it("Should fail because the function is not called by the Mastermind contract", async function () {
@@ -210,12 +210,12 @@ describe("PokerBettingProtocol", function () {
                 .to.emit(pokerBettingProtocol, "NewBet")
                 .withArgs(betIndex2);
 
-            expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(account1.address);
-            expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(account2.address);
-            expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(account1.address);
-            expect(await pokerBettingProtocol.players(betIndex2, "0")).to.equal(account3.address);
-            expect(await pokerBettingProtocol.players(betIndex2, "1")).to.equal(account4.address);
-            expect(await pokerBettingProtocol.nextMove(betIndex2)).to.equal(account3.address);
+            expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "0")).to.equal(account1.address);
+            expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "1")).to.equal(account2.address);
+            expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(account1.address);
+            expect(await pokerBettingProtocol.getPlayerAddress(betIndex2, "0")).to.equal(account3.address);
+            expect(await pokerBettingProtocol.getPlayerAddress(betIndex2, "1")).to.equal(account4.address);
+            expect(await pokerBettingProtocol.getNextMove(betIndex2)).to.equal(account3.address);
         });
     });
 
@@ -228,9 +228,9 @@ describe("PokerBettingProtocol", function () {
                     .to.emit(pokerBettingProtocol, "Rise")
                     .withArgs(betIndex, oneEth);
 
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(account2);
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(oneEth);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(account2);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(oneEth);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(0);
             });
 
             it("Should fail because the function is not called by the Mastermind contract", async function () {
@@ -290,9 +290,9 @@ describe("PokerBettingProtocol", function () {
                     .to.emit(pokerBettingProtocol, "Check")
                     .withArgs(betIndex);
 
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(oneEth);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(oneEth);
+                expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(oneEth);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(oneEth);
             });
 
             it("Should fail when the second player sends not enough Wei to match the current bet", async function () {
@@ -311,17 +311,17 @@ describe("PokerBettingProtocol", function () {
                     .to.emit(pokerBettingProtocol, "Rise")
                     .withArgs(betIndex, oneEth);
 
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(account1);
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(oneEth);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(twoEth);
+                expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(account1);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(oneEth);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(twoEth);
 
                 await expect(pokerBettingProtocol.connect(mastermindAddress).bet(betIndex, account1, { "value": oneEth }))
                     .to.emit(pokerBettingProtocol, "Check")
                     .withArgs(betIndex);
 
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(twoEth);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(twoEth);
+                expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(twoEth);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(twoEth);
             });
 
             it("Should support more bet simultaneously", async function () {
@@ -389,11 +389,11 @@ describe("PokerBettingProtocol", function () {
                     .to.emit(pokerBettingProtocol, "Fold")
                     .withArgs(betIndex);
 
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "1")).to.equal(nullAddress);
             });
 
             it("Should fail when trying to fold after the other player already folded", async function () {
@@ -433,17 +433,17 @@ describe("PokerBettingProtocol", function () {
                     .to.emit(pokerBettingProtocol, "Fold")
                     .withArgs(betIndex2);
 
-                expect(await pokerBettingProtocol.nextMove(betIndex)).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getNextMove(betIndex)).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "1")).to.equal(nullAddress);
 
-                expect(await pokerBettingProtocol.nextMove(betIndex2)).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.bets(betIndex2, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex2, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex2, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex2, "1")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getNextMove(betIndex2)).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex2, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex2, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex2, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex2, "1")).to.equal(nullAddress);
             });
         });
     });
@@ -464,10 +464,10 @@ describe("PokerBettingProtocol", function () {
                     [-twoEth, twoEth]
                     );
 
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "1")).to.equal(nullAddress);
             });
 
             it("Should give only the first bet to the winner", async function () {
@@ -484,10 +484,10 @@ describe("PokerBettingProtocol", function () {
                     [-oneEth, oneEth]
                 );
 
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "1")).to.equal(nullAddress);
             });
 
             it("Should fail if an address that is not the mastermindAddress try to call the withdraw method", async function () {
@@ -560,10 +560,10 @@ describe("PokerBettingProtocol", function () {
                     [-twoEth, oneEth, oneEth]
                     );
 
-                expect(await pokerBettingProtocol.bets(betIndex, "0")).to.equal(0);
-                expect(await pokerBettingProtocol.bets(betIndex, "1")).to.equal(0);
-                expect(await pokerBettingProtocol.players(betIndex, "0")).to.equal(nullAddress);
-                expect(await pokerBettingProtocol.players(betIndex, "1")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "0")).to.equal(0);
+                expect(await pokerBettingProtocol.getBetForPlayer(betIndex, "1")).to.equal(0);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "0")).to.equal(nullAddress);
+                expect(await pokerBettingProtocol.getPlayerAddress(betIndex, "1")).to.equal(nullAddress);
             });
 
             it("Should fail if an address that is not the mastermindAddress try to call the withdraw method", async function () {

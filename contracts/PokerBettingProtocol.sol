@@ -4,10 +4,18 @@ pragma solidity ^0.8.24;
 import "hardhat/console.sol";
 
 contract PokerBettingProtocol {
+    struct Player {
+        address addr;
+        uint bet;
+    }
+
+    struct Bet {
+        Player[2] players;
+        address nextMove;
+    }
+    
     /*  Variables declaration  */
-    mapping(uint256 => address[2]) public players;
-    mapping(uint256 => uint[2]) public bets;
-    mapping(uint256 => address) public nextMove;
+    mapping(uint256 => Bet) bets;
 
     address immutable mastermindAddress;
 
@@ -26,9 +34,9 @@ contract PokerBettingProtocol {
 
     modifier validateCall(uint index, address playerAddress) {
         require(mastermindAddress == msg.sender, "This function can only be invoked by Mastermind contract");
-        require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exists");
+        require(bets[index].players[0].addr != address(0) && bets[index].players[1].addr != address(0), "Index doesn't exists");
         require(playerAddress != address(0), "The provided address is null");
-        require(nextMove[index] == playerAddress, "Invalid sender address. Not your turn");
+        require(bets[index].nextMove == playerAddress, "Invalid sender address. Not your turn");
 
         _;
     }
@@ -41,13 +49,13 @@ contract PokerBettingProtocol {
 
     function newBetting(address player1, address player2, uint index) external validateMastermindAddress() {
         require(player1 != address(0) && player2 != address(0), "Invalid address");
-        require(players[index][0] == address(0) && players[index][1] == address(0), "Index already in use");
+        require(bets[index].players[0].addr == address(0) && bets[index].players[1].addr == address(0), "Index already in use");
         require(player1 != player2, "Can't open a new bet with yourself");
 
-        players[index][0] = player1;
-        players[index][1] = player2;
+        bets[index].players[0].addr = player1;
+        bets[index].players[1].addr = player2;
 
-        nextMove[index] = player1;
+        bets[index].nextMove = player1;
 
         emit NewBet(index);
     }
@@ -63,14 +71,14 @@ contract PokerBettingProtocol {
 
         require(senderBet + msg.value >= opponentBet, "Sendend amount is not valid");
 
-        bets[index][senderIndex] += msg.value;
-        nextMove[index] = players[index][opponentIndex];
+        bets[index].players[senderIndex].bet += msg.value;
+        bets[index].nextMove = bets[index].players[opponentIndex].addr;
 
         uint betDifference = senderBet + msg.value - opponentBet;
         if (betDifference == 0) {
-            nextMove[index] = address(0);
+            bets[index].nextMove = address(0);
             emit Check(index);
-            return (true, bets[index][0]);
+            return (true, bets[index].players[0].bet);
         }
             
         emit Rise(index, betDifference);
@@ -80,32 +88,32 @@ contract PokerBettingProtocol {
     function fold(uint index, address playerAddress) external validateCall(index, playerAddress) {
         (uint senderBet, uint opponentBet) = getBets(index, playerAddress);
 
-        bets[index][0] = 0;
-        bets[index][1] = 0;
-        nextMove[index] = address(0);
+        bets[index].players[0].bet = 0;
+        bets[index].players[1].bet = 0;
+        bets[index].nextMove = address(0);
 
         (address payable sender, address payable opponent) = getPlayersPaybleAddress(index, playerAddress);
 
         sender.transfer(senderBet);
         opponent.transfer(opponentBet);
 
-        players[index][0] = address(0);
-        players[index][1] = address(0);
+        bets[index].players[0].addr = address(0);
+        bets[index].players[1].addr = address(0);
 
         emit Fold(index);
     }
 
     function withdraw(uint index, address payable winner) external validateMastermindAddress() returns(uint) {
-        require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
-        require(players[index][0] == winner || players[index][1] == winner, "Winner address doesn't exist");
-        require(bets[index][0] != 0 || bets[index][1] != 0, "Bet not started yet");
+        require(bets[index].players[0].addr != address(0) && bets[index].players[1].addr != address(0), "Index doesn't exist");
+        require(bets[index].players[0].addr == winner || bets[index].players[1].addr == winner, "Winner address doesn't exist");
+        require(bets[index].players[0].bet != 0 || bets[index].players[1].bet != 0, "Bet not started yet");
 
-        uint weiWon = bets[index][0] + bets[index][1];
+        uint weiWon = bets[index].players[0].bet + bets[index].players[1].bet;
 
-        players[index][0] = address(0);
-        players[index][1] = address(0);
-        bets[index][0] = 0;
-        bets[index][1] = 0;
+        bets[index].players[0].addr = address(0);
+        bets[index].players[1].addr = address(0);
+        bets[index].players[0].bet = 0;
+        bets[index].players[1].bet = 0;
 
         winner.transfer(weiWon);
 
@@ -115,19 +123,19 @@ contract PokerBettingProtocol {
     }
 
     function withdrawTie(uint index) external validateMastermindAddress() returns(uint) {
-        require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
-        require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
-        require(bets[index][0] == bets[index][1], "The bet is not agreed yet");
+        require(bets[index].players[0].addr != address(0) && bets[index].players[1].addr != address(0), "Index doesn't exist");
+        require(bets[index].players[0].bet != 0 && bets[index].players[1].bet != 0, "Bet not started yet");
+        require(bets[index].players[0].bet == bets[index].players[1].bet, "The bet is not agreed yet");
 
-        address payable player1 = payable(players[index][0]);
-        address payable player2 = payable(players[index][1]);
-        uint amount1 = bets[index][0];
-        uint amount2 = bets[index][1];
+        address payable player1 = payable(bets[index].players[0].addr);
+        address payable player2 = payable(bets[index].players[1].addr);
+        uint amount1 = bets[index].players[0].bet;
+        uint amount2 = bets[index].players[1].bet;
 
-        players[index][0] = address(0);
-        players[index][1] = address(0);
-        bets[index][0] = 0;
-        bets[index][1] = 0;
+        bets[index].players[0].addr = address(0);
+        bets[index].players[1].addr = address(0);
+        bets[index].players[0].bet = 0;
+        bets[index].players[1].bet = 0;
 
         player1.transfer(amount1);
         player2.transfer(amount2);
@@ -138,27 +146,27 @@ contract PokerBettingProtocol {
     }
 
     function isBetCreated(uint index) public view returns(bool) {
-        return players[index][0] != address(0) && players[index][1] != address(0);
+        return bets[index].players[0].addr != address(0) && bets[index].players[1].addr != address(0);
     }
 
     function isBetFinished(uint index) public view returns(bool) {
-        require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exists");
-        require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
+        require(bets[index].players[0].addr != address(0) && bets[index].players[1].addr != address(0), "Index doesn't exists");
+        require(bets[index].players[0].bet != 0 && bets[index].players[1].bet != 0, "Bet not started yet");
 
-        return bets[index][0] == bets[index][1];
+        return bets[index].players[0].bet == bets[index].players[1].bet;
     }
 
     function getBets(uint index, address playerAddress) internal view returns(uint, uint) {
         uint senderBet;
         uint opponentBet;
 
-        if (players[index][0] == playerAddress) {
-            senderBet = bets[index][0];
-            opponentBet = bets[index][1];
+        if (bets[index].players[0].addr == playerAddress) {
+            senderBet = bets[index].players[0].bet;
+            opponentBet = bets[index].players[1].bet;
         }
         else {
-            senderBet = bets[index][1];
-            opponentBet = bets[index][0];
+            senderBet = bets[index].players[1].bet;
+            opponentBet = bets[index].players[0].bet;
         }
 
         return (senderBet, opponentBet);
@@ -168,7 +176,7 @@ contract PokerBettingProtocol {
         uint senderIndex;
         uint opponentIndex;
 
-        if (players[index][0] == playerAddress) {
+        if (bets[index].players[0].addr == playerAddress) {
             senderIndex = 0;
             opponentIndex = 1;
         }
@@ -182,11 +190,23 @@ contract PokerBettingProtocol {
 
     function getPlayersPaybleAddress(uint index, address playerAddress) internal view returns(address payable, address payable) {
         address payable opponent;
-        if (players[index][0] == playerAddress)
-            opponent = payable(players[index][1]);
+        if (bets[index].players[0].addr == playerAddress)
+            opponent = payable(bets[index].players[1].addr);
         else
-            opponent = payable(players[index][0]);
+            opponent = payable(bets[index].players[0].addr);
 
         return (payable(playerAddress), opponent);
+    }
+
+    function getPlayerAddress(uint betIndex, uint playerIndex) external view returns(address playerAddress) {
+        return bets[betIndex].players[playerIndex].addr;
+    }
+
+    function getNextMove(uint betIndex) external view returns(address playerAddress) {
+        return bets[betIndex].nextMove;
+    }
+
+    function getBetForPlayer(uint betIndex, uint playerIndex) external view returns(uint _bet) {
+        return bets[betIndex].players[playerIndex].bet;
     }
 }
