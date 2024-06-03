@@ -9,7 +9,7 @@ contract PokerBettingProtocol {
     mapping(uint256 => uint[2]) public bets;
     mapping(uint256 => address) public nextMove;
 
-    address immutable breakTheHiddenCodeAddress;
+    address immutable mastermindAddress;
 
     /*  Events declaration  */
     event NewBet(uint index);
@@ -20,12 +20,12 @@ contract PokerBettingProtocol {
     event Withdraw(uint index, address receiver, uint amount);
     event WithdrawTie(uint index, address player1, address player2);
 
-    constructor(address _breakTheHiddenCodeAddress) {
-        breakTheHiddenCodeAddress = _breakTheHiddenCodeAddress;
+    constructor(address _mastermindAddress) {
+        mastermindAddress = _mastermindAddress;
     }
 
     modifier validateCall(uint index, address playerAddress) {
-        require(breakTheHiddenCodeAddress == msg.sender, "This function can only be invoked by BreakTheHiddenCode contract");
+        require(mastermindAddress == msg.sender, "This function can only be invoked by Mastermind contract");
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exists");
         require(playerAddress != address(0), "The provided address is null");
         require(nextMove[index] == playerAddress, "Invalid sender address. Not your turn");
@@ -33,13 +33,13 @@ contract PokerBettingProtocol {
         _;
     }
 
-    modifier validateBthcAddress() {
-        require(breakTheHiddenCodeAddress == msg.sender, "This function can only be invoked by BreakTheHiddenCode contract");
+    modifier validateMastermindAddress() {
+        require(mastermindAddress == msg.sender, "This function can only be invoked by Mastermind contract");
 
         _;
     }
 
-    function newBetting(address player1, address player2, uint index) external validateBthcAddress() {
+    function newBetting(address player1, address player2, uint index) external validateMastermindAddress() {
         require(player1 != address(0) && player2 != address(0), "Invalid address");
         require(players[index][0] == address(0) && players[index][1] == address(0), "Index already in use");
         require(player1 != player2, "Can't open a new bet with yourself");
@@ -95,7 +95,7 @@ contract PokerBettingProtocol {
         emit Fold(index);
     }
 
-    function withdraw(uint index, address payable winner) external validateBthcAddress() returns(uint) {
+    function withdraw(uint index, address payable winner) external validateMastermindAddress() returns(uint) {
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
         require(players[index][0] == winner || players[index][1] == winner, "Winner address doesn't exist");
         require(bets[index][0] != 0 || bets[index][1] != 0, "Bet not started yet");
@@ -114,7 +114,7 @@ contract PokerBettingProtocol {
         return weiWon;
     }
 
-    function withdrawTie(uint index) external validateBthcAddress() returns(uint) {
+    function withdrawTie(uint index) external validateMastermindAddress() returns(uint) {
         require(players[index][0] != address(0) && players[index][1] != address(0), "Index doesn't exist");
         require(bets[index][0] != 0 && bets[index][1] != 0, "Bet not started yet");
         require(bets[index][0] == bets[index][1], "The bet is not agreed yet");

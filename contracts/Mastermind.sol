@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "hardhat/console.sol";
 import "./PokerBettingProtocol.sol";
 
-contract BreakTheHiddenCode {
+contract Mastermind {
     uint constant N = 5; //Length of the orderd sequence
     uint constant M = 9; //Number of possible colors
     uint constant K = 3; //Extra points to be rewarded
@@ -56,7 +56,7 @@ contract BreakTheHiddenCode {
     event GameCreated(uint gameId);
     event GameCreatedForAnOpponent(uint gameId, address opponent);
     event UserJoined(address opponent, uint gameId);
-    event SecretPublished(uint gameId);
+    event SecretPublished(uint gameId, bytes32 secret);
     event BettingPhaseStarted(uint gameId);
     event Check(uint gameId, uint totalBet, address bettingPlayerAddress);
     event Rise(uint gameId, uint betDifference, address bettingPlayerAddress);
@@ -157,6 +157,7 @@ contract BreakTheHiddenCode {
         require(codeMaker[gameId][turnNumber] == msg.sender, "Can't reveal the secret as CodeBreaker");
         require(guessNumber > 0, "CodeMaker didn't give the feedback yet");
         require(turns[gameId][turnNumber].correctColorPosition[guessNumber - 1] == N || (!isBytesArrayEmpty(turns[gameId][turnNumber].guesses[NG - 1]) && currentGuess[gameId] == NG), "Guesses from the CodeBreaker not finished yet");
+        require(isBytesArrayEmpty(secretCode[gameId][turnNumber]), "Secret already revealed");
         
         if (afkStart[gameId] > 0)
             require(afkStart[gameId] + afkWindow > block.number, "Can't execute this function because the AFK dispute elapsed without a move");
@@ -339,16 +340,16 @@ contract BreakTheHiddenCode {
 
     function publishSecret(uint gameId, bytes32 secret) external validateGame(gameId) {
         require(pokerBetting.isBetFinished(gameId), "Bet is not finished yet");
+        require(nextMoveTo[gameId] == msg.sender, "Not your turn");
         
         afkStart[gameId] = 0;
 
         uint turnNumber = currentTurn[gameId];
-        require(codeMaker[gameId][turnNumber] == msg.sender, "Not the CodeMaker");
 
         secretCodeHash[gameId][turnNumber] = secret;
         nextMoveTo[gameId] = getCodeBreakerAddress(gameId, msg.sender);
 
-        emit SecretPublished(gameId);
+        emit SecretPublished(gameId, secret);
     }
 
     function tryGuess(uint gameId, bytes1[] memory guess) external validateGameForGuess(gameId, guess) {
