@@ -1921,7 +1921,7 @@ describe("Mastermind", function () {
                 );
         });
 
-        it("Should fail because it has a non-ammissibile color in the guess", async function () {
+        it("Should fail because it has a non-admissibile color in the guess", async function () {
             const { mastermind, codeBreakerAddress, gameId } = await loadFixture(deployPublishedSecretFixture);
 
             const guess = ['B', 'R', 'L', 'G', 'G'];

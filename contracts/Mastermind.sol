@@ -54,7 +54,7 @@ contract Mastermind {
 
     PokerBettingProtocol pokerBetting;
 
-    bytes1[] public ammissibleColors;
+    bytes1[] public admissible;
 
     mapping(uint256 => Game) games;
 
@@ -88,17 +88,17 @@ contract Mastermind {
         nextGameId = 0;
         pokerBetting = new PokerBettingProtocol(address(this));
 
-        ammissibleColors.push('R'); //Red
-        ammissibleColors.push('G'); //Green
-        ammissibleColors.push('B'); //Blue
-        ammissibleColors.push('W'); //White
-        ammissibleColors.push('Y'); //Yellow
-        ammissibleColors.push('P'); //Purple
-        ammissibleColors.push('M'); //Magenta
-        ammissibleColors.push('C'); //Cyan
-        ammissibleColors.push('O'); //Orange
+        admissible.push('R'); //Red
+        admissible.push('G'); //Green
+        admissible.push('B'); //Blue
+        admissible.push('W'); //White
+        admissible.push('Y'); //Yellow
+        admissible.push('P'); //Purple
+        admissible.push('M'); //Magenta
+        admissible.push('C'); //Cyan
+        admissible.push('O'); //Orange
 
-        require(ammissibleColors.length == M, "The number of colors doesn't match the provided colors");
+        require(admissible.length == M, "The number of colors doesn't match the provided colors");
 
         require(_disputeWindow > 0, "Dispute window length must be greater than zero");
         disputeWindow = _disputeWindow;
@@ -620,8 +620,8 @@ contract Mastermind {
     }
 
     function findColor(bytes1 color) internal view returns(bool) {
-        for(uint i = 0; i < ammissibleColors.length; i++) {
-            if (color == ammissibleColors[i])
+        for(uint i = 0; i < admissible.length; i++) {
+            if (color == admissible[i])
                 return true;
         }
 
