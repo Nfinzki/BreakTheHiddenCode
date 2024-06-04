@@ -13,7 +13,7 @@ contract PokerBettingProtocol {
         Player[2] players;
         address nextMove;
     }
-    
+
     /*  Variables declaration  */
     mapping(uint256 => Bet) bets;
 
@@ -78,7 +78,7 @@ contract PokerBettingProtocol {
         if (betDifference == 0) {
             bets[index].nextMove = address(0);
             emit Check(index);
-            return (true, bets[index].players[0].bet);
+            return (true, bets[index].players[0].bet + bets[index].players[1].bet);
         }
             
         emit Rise(index, betDifference);

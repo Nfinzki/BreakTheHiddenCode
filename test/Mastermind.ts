@@ -1586,12 +1586,12 @@ describe("Mastermind", function () {
             });
 
             it("Should emit Check when a player matches the bet, then should emit CodeMakerSelected", async function () {
-                const { mastermind, account2, gameId, oneEth } = await loadFixture(deployFirstBetFixture);
+                const { mastermind, account2, gameId, oneEth, twoEth } = await loadFixture(deployFirstBetFixture);
 
                 const response = mastermind.connect(account2).bet(gameId, {"value": oneEth});
                 await expect(response)
                     .to.emit(mastermind, "Check")
-                    .withArgs(gameId, oneEth, account2);
+                    .withArgs(gameId, twoEth, account2);
 
                 await expect(response)
                     .to.emit(mastermind, "CodeMakerSelected")

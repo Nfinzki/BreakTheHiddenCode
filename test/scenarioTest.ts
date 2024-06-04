@@ -17,9 +17,10 @@ describe("Mastermind", function () {
 
         const oneEth = hre.ethers.parseEther("1");
         const twoEth = hre.ethers.parseEther("2");
+        const fourEth = hre.ethers.parseEther("4");
         const fiftyEth = hre.ethers.parseEther("50");
 
-        return { mastermind, nullAddress, account1, account2, account3, account4, oneEth, twoEth, fiftyEth };
+        return { mastermind, nullAddress, account1, account2, account3, account4, oneEth, twoEth, fourEth, fiftyEth };
     }
 
     async function deployContractWithLargerDisputeWindowFixture() {
@@ -99,7 +100,7 @@ describe("Mastermind", function () {
 
     describe("Scenario 1", function () {
         it("Scenario 1 - A couple of honest games where the players agree on the prize after a couple of bets and they guess correctly at the first try or after a couple of tries. One of the player fails to correctly guess the code", async function () {
-            const { mastermind, account1, account2, account3, account4, oneEth, twoEth } = await loadFixture(deployContractFixture);
+            const { mastermind, account1, account2, account3, account4, oneEth, twoEth, fourEth } = await loadFixture(deployContractFixture);
 
             /*      Game creation      */
             const firstGameId = 0;
@@ -134,7 +135,7 @@ describe("Mastermind", function () {
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "Check")
-                .withArgs(firstGameId, oneEth, account2);
+                .withArgs(firstGameId, twoEth, account2);
 
             let turnNumberGame1 = 0;
             let guessNumberGame1 = 0;
@@ -151,7 +152,7 @@ describe("Mastermind", function () {
 
             await expect(secondGameResponse)
                 .to.emit(mastermind, "Check")
-                .withArgs(secondGameId, twoEth, account3);
+                .withArgs(secondGameId, fourEth, account3);
 
             let turnNumberGame2 = 0;
             let guessNumberGame2 = 0;
@@ -541,7 +542,7 @@ describe("Mastermind", function () {
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "Check")
-                .withArgs(gameId, oneEth, account2);
+                .withArgs(gameId, twoEth, account2);
 
             let turnNumber = 0;
             let guessNumber = 0;
@@ -638,7 +639,7 @@ describe("Mastermind", function () {
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "Check")
-                .withArgs(gameId, oneEth, account2);
+                .withArgs(gameId, twoEth, account2);
 
             let turnNumber = 0;
             let guessNumber = 0;
@@ -735,7 +736,7 @@ describe("Mastermind", function () {
 
             await expect(firstGameResponse)
                 .to.emit(mastermind, "Check")
-                .withArgs(gameId, oneEth, account2);
+                .withArgs(gameId, twoEth, account2);
 
             let turnNumber = 0;
             let guessNumber = 0;
