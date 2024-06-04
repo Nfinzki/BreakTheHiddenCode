@@ -42,6 +42,7 @@ contract Mastermind {
         address winner;
         bool isGameTied;
         uint finalPrize;
+        string gameEndingReason;
     }
 
     /*  Variables declaration */
@@ -296,6 +297,8 @@ contract Mastermind {
 
         removeConnectedPlayer(games[gameId].players[0].addr);
 
+        games[gameId].gameEndingReason = "No player joined";
+
         emit Disconnected(msg.sender);        
     }
 
@@ -339,6 +342,7 @@ contract Mastermind {
 
         games[gameId].nextMoveTo = address(0);
         games[gameId].gameFinished = true;
+        games[gameId].gameEndingReason = "Fold";
 
         emit Fold(gameId, msg.sender);
     }
@@ -419,6 +423,7 @@ contract Mastermind {
             games[gameId].gameFinished = true;
             games[gameId].winner = codeBreakerAddress;
             games[gameId].finalPrize = prize;
+            games[gameId].gameEndingReason = "Invalid secret revealed";
         }
 
         games[gameId].disputeStart = block.number;
@@ -447,6 +452,7 @@ contract Mastermind {
         games[gameId].gameFinished = true;
         games[gameId].winner = disputeWinner;
         games[gameId].finalPrize = prize;
+        games[gameId].gameEndingReason = "Dispute";
     }
 
     function changeTurn(uint gameId) external validateChangeTurn(gameId) {
@@ -498,6 +504,7 @@ contract Mastermind {
 
             games[gameId].isGameTied = true;
             games[gameId].finalPrize = prize;
+            games[gameId].gameEndingReason = "Game ended";
 
             emit GameEndedWithTie(gameId);
 
@@ -513,6 +520,7 @@ contract Mastermind {
 
         games[gameId].winner = _winner;
         games[gameId].finalPrize = prize;
+        games[gameId].gameEndingReason = "Game ended";
 
         emit GameEnded(gameId, _winner, prize);
     }
@@ -529,6 +537,7 @@ contract Mastermind {
         games[gameId].gameFinished = true;
         games[gameId].winner = msg.sender;
         games[gameId].finalPrize = prize;
+        games[gameId].gameEndingReason = "Afk redeemed";
 
         emit GameEndedDueToAfk(gameId, msg.sender, prize);
     }
@@ -733,5 +742,9 @@ contract Mastermind {
     
     function getPointsForPlayer(uint gameId, uint playerIndex) external view returns(uint) {
         return games[gameId].players[playerIndex].points;
+    }
+
+    function getGameEndingReason(uint gameId) external view returns(string memory) {
+        return games[gameId].gameEndingReason;
     }
 }

@@ -471,6 +471,7 @@ describe("Mastermind", function () {
             expect(await mastermind.getPointsForPlayer(firstGameId, codeMakerIndexGame1)).to.equal(4);
             expect(await mastermind.getPointsForPlayer(firstGameId, codeBreakerIndexGame1)).to.equal(9);
             await expect(firstGameResponse).to.changeEtherBalance(codeBreakerAddressGame1, twoEth);
+            expect(await mastermind.getGameEndingReason(firstGameId)).to.be.equal("Game ended");
 
 
             await expect(mastermind.connect(codeMakerAddressGame2).changeTurn(secondGameId))
@@ -480,6 +481,7 @@ describe("Mastermind", function () {
             expect(await mastermind.getPointsForPlayer(secondGameId, codeMakerIndexGame2)).to.equal(5);
             expect(await mastermind.getPointsForPlayer(secondGameId, codeBreakerIndexGame2)).to.equal(5);
             await expect(firstGameResponse).to.changeEtherBalance(codeBreakerAddressGame1, twoEth);
+            expect(await mastermind.getGameEndingReason(secondGameId)).to.equal("Game ended");
         });
 
         it("Scenario 2 - One of the two players fold during the betting because the bet is too high", async function () {
@@ -515,6 +517,8 @@ describe("Mastermind", function () {
                 [account1, account2],
                 [oneEth + fiftyEth, twoEth]
             );
+
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Fold");
         });
 
         it("Scenario 3 - The CodeMaker turns out to be dishonest and publishes the wrong secret", async function () {
@@ -577,6 +581,7 @@ describe("Mastermind", function () {
                 .withArgs(gameId, codeMakerAddress);
 
             await expect(response).to.changeEtherBalance(codeBreakerAddress, twoEth);
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Invalid secret revealed");
         });
 
         it("Scenario 4 - The CodeMaker turns out to be dishonest because gives wrong feedbacks to mislead the CodeBreaker", async function () {
@@ -612,6 +617,8 @@ describe("Mastermind", function () {
                 [account1, account2],
                 [oneEth + fiftyEth, twoEth]
             );
+
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Fold");
         });
 
         it("Scenario 5 - The CodeMaker turns out to be dishonest and publishes the wrong secret", async function () {
@@ -708,6 +715,7 @@ describe("Mastermind", function () {
                 .withArgs(gameId, codeBreakerAddress);
 
             await expect(response).to.changeEtherBalance(codeBreakerAddress, twoEth);
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Dispute");
         });
 
         it("Scenario 6 - The CodeBreaker doesn't provide a new guess for too long and the CodeMaker emits an Afk that elapse", async function () {
@@ -788,11 +796,14 @@ describe("Mastermind", function () {
                 .withArgs(gameId, codeMakerAddress, twoEth);
 
             await expect(response).to.changeEtherBalance(codeMakerAddress, twoEth);
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Afk redeemed");
 
             //Quit the other game because no one is joining
             await expect(mastermind.connect(account3).quitGame(secondGameId))
                 .to.emit(mastermind, "Disconnected")
                 .withArgs(account3);
+               
+            expect(await mastermind.getGameEndingReason(secondGameId)).to.equal("No player joined");
         });
     });
 });

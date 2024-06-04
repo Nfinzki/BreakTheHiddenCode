@@ -1529,6 +1529,8 @@ describe("Mastermind", function () {
             await expect(mastermind.connect(account1).quitGame(gameId))
                 .to.emit(mastermind, "Disconnected")
                 .withArgs(account1);
+
+            expect(await mastermind.getGameEndingReason(gameId)).to.equal("No player joined");
         });
 
         it("Should quit a game created with a specific opponent", async function () {
@@ -1537,6 +1539,8 @@ describe("Mastermind", function () {
             await expect(mastermind.connect(account1).quitGame(gameId))
                 .to.emit(mastermind, "Disconnected")
                 .withArgs(account1);
+
+            expect(await mastermind.getGameEndingReason(gameId)).to.equal("No player joined");
         });
 
         it("Should fail because there are no existing games", async function () {
@@ -1658,6 +1662,7 @@ describe("Mastermind", function () {
 
                 expect(await mastermind.isGameFinished(gameId)).to.equal(true);
                 expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
+                expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Fold");
             });
 
             it("Should fold the bet after a couple of bets and emit Fold", async function () {
@@ -1673,6 +1678,8 @@ describe("Mastermind", function () {
                     [account1, account2],
                     [oneEth, twoEth]
                     );
+
+                expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Fold");
             });
 
             it("Should fail because the gameId doesn't exists", async function () {
@@ -2039,6 +2046,7 @@ describe("Mastermind", function () {
             expect(await mastermind.getWinner(gameId)).to.equal(codeBreakerAddress);
             expect(await mastermind.getFinalPrize(gameId)).to.equal(twoEth);
             expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Invalid secret revealed");
         });
 
         it("Should fail because the provided gameId is not correct", async function () {
@@ -2130,6 +2138,7 @@ describe("Mastermind", function () {
             expect(await mastermind.getWinner(gameId)).to.equal(codeMakerAddress);
             expect(await mastermind.getFinalPrize(gameId)).to.equal(twoEth);
             expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Dispute");
         });
 
         it("Should send the prize to the CodeBreaker because the CodeMaker was dishonest in the fourth feedback", async function () {
@@ -2249,6 +2258,7 @@ describe("Mastermind", function () {
             expect(await mastermind.getWinner(gameId)).to.equal(winner);
             expect(await mastermind.getFinalPrize(gameId)).to.equal(twoEth);
             expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
+            expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Game ended");
         });
 
         it("Should end the game after the last turn, compute the final points and send the bets to the owners due to the tie", async function () {
@@ -2269,6 +2279,7 @@ describe("Mastermind", function () {
             expect(await mastermind.isGameTied(gameId)).to.equal(true);
             expect(await mastermind.getWinner(gameId)).to.equal(nullAddress);
             expect(await mastermind.getFinalPrize(gameId)).to.equal(oneEth);
+            expect(await mastermind.getGameEndingReason(gameId)).to.equal("Game ended");
         });
 
         it("Should fail because the provided gameId wasn't found", async function () {
@@ -2479,6 +2490,7 @@ describe("Mastermind", function () {
                 expect(await mastermind.getWinner(gameId)).to.equal(account1);
                 expect(await mastermind.getFinalPrize(gameId)).to.equal(oneEth);
                 expect(await mastermind.isGameTied(gameId)).to.be.equal(false);
+                expect(await mastermind.getGameEndingReason(gameId)).to.be.equal("Afk redeemed");
         });
 
             it("Should fail because the opponent performed his move before the elapse of the AFK timer", async function () {
