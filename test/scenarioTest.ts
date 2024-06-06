@@ -65,7 +65,7 @@ describe("Mastermind", function () {
             .withArgs(gameId, expectedEth, account1);
     }
 
-    async function publishSecret(mastermind: any, gameId: any, codeMakerAddress: any, codeBreakerAddress: any, secret: any, salt: any) {
+    async function publishSecret(mastermind: any, gameId: any, codeMakerAddress: any, secret: any, salt: any) {
         let firstGameSecretHash = hre.ethers.keccak256(hre.ethers.toUtf8Bytes(secret + salt));
 
         await expect(mastermind.connect(codeMakerAddress).publishSecret(gameId, firstGameSecretHash))
@@ -166,11 +166,11 @@ describe("Mastermind", function () {
             /*      Publish Secret phase - Turn 1      */
             const salt = "V3ryL0ngS4ltV4lu3";
             let { codeMakerAddress: codeMakerAddressGame1, codeBreakerAddress: codeBreakerAddressGame1 } = getPlayersRole(account1, account2, codeMakerGame1);
-            await publishSecret(mastermind, firstGameId, codeMakerAddressGame1, codeBreakerAddressGame1, "RGBRG", salt);
+            await publishSecret(mastermind, firstGameId, codeMakerAddressGame1, "RGBRG", salt);
 
 
             let { codeMakerAddress: codeMakerAddressGame2, codeBreakerAddress: codeBreakerAddressGame2 } = getPlayersRole(account3, account4, codeMakerGame2);
-            await publishSecret(mastermind, secondGameId, codeMakerAddressGame2, codeBreakerAddressGame2, "GGOWB", salt);
+            await publishSecret(mastermind, secondGameId, codeMakerAddressGame2, "GGOWB", salt);
 
 
             /*      Guessing phase - Turn 1      */
@@ -269,11 +269,11 @@ describe("Mastermind", function () {
             /*      Publish Secret phase - Turn 2      */
             ({ codeMakerAddress: codeMakerAddressGame1, codeBreakerAddress: codeBreakerAddressGame1 } = getPlayersRole(account1, account2, codeMakerGame1));
 
-            publishSecret(mastermind, firstGameId, codeMakerAddressGame1, codeBreakerAddressGame1, "WPOBR", salt);
+            publishSecret(mastermind, firstGameId, codeMakerAddressGame1, "WPOBR", salt);
 
 
             ({ codeMakerAddress: codeMakerAddressGame2, codeBreakerAddress: codeBreakerAddressGame2 } = getPlayersRole(account3, account4, codeMakerGame2));
-            publishSecret(mastermind, secondGameId, codeMakerAddressGame2, codeBreakerAddressGame2, "MOCGR", salt);
+            publishSecret(mastermind, secondGameId, codeMakerAddressGame2, "MOCGR", salt);
 
 
             /*      Guessing phase - Turn 2      */
@@ -345,11 +345,11 @@ describe("Mastermind", function () {
             /*      Publish Secret phase - Turn 3      */
             ({ codeMakerAddress: codeMakerAddressGame1, codeBreakerAddress: codeBreakerAddressGame1 } = getPlayersRole(account1, account2, codeMakerGame1));
 
-            publishSecret(mastermind, firstGameId, codeMakerAddressGame1, codeBreakerAddressGame1, "ROOCY", salt);
+            publishSecret(mastermind, firstGameId, codeMakerAddressGame1, "ROOCY", salt);
 
 
             ({ codeMakerAddress: codeMakerAddressGame2, codeBreakerAddress: codeBreakerAddressGame2 } = getPlayersRole(account3, account4, codeMakerGame2));
-            publishSecret(mastermind, secondGameId, codeMakerAddressGame2, codeBreakerAddressGame2, "COMPY", salt);
+            publishSecret(mastermind, secondGameId, codeMakerAddressGame2, "COMPY", salt);
 
 
             /*      Guessing phase - Turn 3      */
@@ -410,11 +410,11 @@ describe("Mastermind", function () {
                 .withArgs(secondGameId, codeBreakerAddressGame2);
 
             ({ codeMakerAddress: codeMakerAddressGame1, codeBreakerAddress: codeBreakerAddressGame1 } = getPlayersRole(account1, account2, codeMakerGame1));
-            publishSecret(mastermind, firstGameId, codeMakerAddressGame1, codeBreakerAddressGame1, "COCCY", salt);
+            publishSecret(mastermind, firstGameId, codeMakerAddressGame1, "COCCY", salt);
 
 
             ({ codeMakerAddress: codeMakerAddressGame2, codeBreakerAddress: codeBreakerAddressGame2 } = getPlayersRole(account3, account4, codeMakerGame2));
-            publishSecret(mastermind, secondGameId, codeMakerAddressGame2, codeBreakerAddressGame2, "YOWMY", salt);
+            publishSecret(mastermind, secondGameId, codeMakerAddressGame2, "YOWMY", salt);
 
 
             /*      Guessing phase - Turn 4      */
@@ -560,7 +560,7 @@ describe("Mastermind", function () {
             /*      Publish Secret phase - Turn 1      */
             const salt = "V3ryL0ngS4ltV4lu3";
             let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
-            await publishSecret(mastermind, gameId, codeMakerAddress, codeBreakerAddress, "RGBRG", salt);
+            await publishSecret(mastermind, gameId, codeMakerAddress, "RGBRG", salt);
 
 
             /*      Guessing phase - Turn 1      */
@@ -660,7 +660,7 @@ describe("Mastermind", function () {
             /*      Publish Secret phase - Turn 1      */
             const salt = "V3ryL0ngS4ltV4lu3";
             let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
-            await publishSecret(mastermind, gameId, codeMakerAddress, codeBreakerAddress, "RGBRG", salt);
+            await publishSecret(mastermind, gameId, codeMakerAddress, "RGBRG", salt);
 
 
             /*      Guessing phase - Turn 1      */
@@ -758,7 +758,7 @@ describe("Mastermind", function () {
             /*      Publish Secret phase - Turn 1      */
             const salt = "V3ryL0ngS4ltV4lu3";
             let { codeMakerAddress, codeBreakerAddress } = getPlayersRole(account1, account2, codeMaker);
-            await publishSecret(mastermind, gameId, codeMakerAddress, codeBreakerAddress, "RGBRG", salt);
+            await publishSecret(mastermind, gameId, codeMakerAddress, "RGBRG", salt);
 
 
             /*      Guessing phase - Turn 1      */
