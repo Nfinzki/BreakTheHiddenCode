@@ -418,12 +418,15 @@ contract Mastermind {
         if (computedSecret != games[gameId].secretCodeHash[turnNumber]) {
             uint prize = pokerBetting.withdraw(gameId, payable(codeBreakerAddress));
 
-            emit PlayerDishonest(gameId, msg.sender);
+            removeConnectedPlayer(games[gameId].players[0].addr);
+            removeConnectedPlayer(games[gameId].players[1].addr);
 
             games[gameId].gameFinished = true;
             games[gameId].winner = codeBreakerAddress;
             games[gameId].finalPrize = prize;
             games[gameId].gameEndingReason = "Invalid secret revealed";
+            
+            emit PlayerDishonest(gameId, msg.sender);
         }
 
         games[gameId].disputeStart = block.number;
@@ -447,12 +450,16 @@ contract Mastermind {
         }
 
         uint prize = pokerBetting.withdraw(gameId, disputeWinner);
-        emit DisputeOutcome(gameId, disputeWinner);
+
+        removeConnectedPlayer(games[gameId].players[0].addr);
+        removeConnectedPlayer(games[gameId].players[1].addr);
 
         games[gameId].gameFinished = true;
         games[gameId].winner = disputeWinner;
         games[gameId].finalPrize = prize;
         games[gameId].gameEndingReason = "Dispute";
+
+        emit DisputeOutcome(gameId, disputeWinner);
     }
 
     function changeTurn(uint gameId) external validateChangeTurn(gameId) {
@@ -502,6 +509,9 @@ contract Mastermind {
         if (games[gameId].players[0].points == games[gameId].players[1].points) {
             prize = pokerBetting.withdrawTie(gameId);
 
+            removeConnectedPlayer(games[gameId].players[0].addr);
+            removeConnectedPlayer(games[gameId].players[1].addr);
+
             games[gameId].isGameTied = true;
             games[gameId].finalPrize = prize;
             games[gameId].gameEndingReason = "Game ended";
@@ -518,6 +528,9 @@ contract Mastermind {
         
         prize = pokerBetting.withdraw(gameId, _winner);
 
+        removeConnectedPlayer(games[gameId].players[0].addr);
+        removeConnectedPlayer(games[gameId].players[1].addr);
+
         games[gameId].winner = _winner;
         games[gameId].finalPrize = prize;
         games[gameId].gameEndingReason = "Game ended";
@@ -533,6 +546,9 @@ contract Mastermind {
 
     function redeemAfterAfk(uint gameId) external validateRedeemAfterAfk(gameId) {
         uint prize = pokerBetting.withdraw(gameId, payable(msg.sender));
+
+        removeConnectedPlayer(games[gameId].players[0].addr);
+        removeConnectedPlayer(games[gameId].players[1].addr);
 
         games[gameId].gameFinished = true;
         games[gameId].winner = msg.sender;
